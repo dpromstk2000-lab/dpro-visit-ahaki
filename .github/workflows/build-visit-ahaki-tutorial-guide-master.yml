@@ -1,4 +1,4 @@
-name: Build VISIT AHAKI Tutorial Guide Master V1.1
+name: Build VISIT AHAKI Tutorial Guide Master V1.2
 
 on:
   push:
@@ -209,8 +209,8 @@ jobs:
 
                 <section class="guide-group wide" data-group="manuals">
                   <h2>保存版PDF</h2>
-                  <p>Quick Startと詳細操作マニュアルは、現在のCENTRAL MASTERに合わせて再制作中です。</p>
-                  <div class="manual-note">旧PDFはFINAL基準として使用しません。新しい保存版PDFのQA完了後、このGuide Centerから正式版へ接続します。</div>
+                  <p>Quick Startと詳細操作マニュアルは、現在の操作内容に合わせて更新中です。</p>
+                  <div class="manual-note">新しい保存版PDFの準備が完了後、このGuide Centerから確認できるようになります。</div>
                   <div class="guide-links">
                     <span class="guide-disabled" aria-disabled="true">Quick Start 更新準備中</span>
                     <span class="guide-disabled" aria-disabled="true">詳細マニュアル 更新準備中</span>
@@ -455,9 +455,20 @@ jobs:
           checks['tutorial_exact10']=tutorial.count("{title:'") == 10
           checks['tutorial_state_key']="dpro_visit_ahaki_first10_v11" in tutorial
           checks['tutorial_controls']=all(x in tutorial for x in ['Back','Next','Skip','Close','Escape'])
-          checks['tutorial_no_business_api']=all(x not in tutorial for x in ['DPRO.api(','/demo/reset','/communications','method:\\'POST\\'','method:"POST"','fetch('])
+          forbidden_api = [
+              "DPRO.api(", "/demo/reset", "/communications",
+              "method:'POST'", 'method:"POST"', "fetch(",
+              "XMLHttpRequest", "sendBeacon", "workers.dev", "/api/"
+          ]
+          checks['tutorial_no_business_api']=all(x not in tutorial for x in forbidden_api)
           checks['no_old_5step']='最初の5ステップ' not in tutorial and '5ステップで' not in guide
-          checks['no_internal_visible_labels']=all(x not in (guide+tutorial) for x in ['CANONICAL','business mutation','TUTORIAL STATE','R4 CENTRAL','STANDARD V1.1 LOCK'])
+          checks['no_internal_visible_labels']=all(
+              x not in (guide+tutorial)
+              for x in [
+                  'CANONICAL','business mutation','TUTORIAL STATE',
+                  'R4 CENTRAL','STANDARD V1.1 LOCK','CENTRAL MASTER','FINAL基準'
+              ]
+          )
 
           if not all(checks.values()):
               raise SystemExit(json.dumps(checks,ensure_ascii=False,indent=2))
@@ -635,7 +646,8 @@ jobs:
               'Owner_Office':True,'Staff':True,'Patient_Family':True,
               'System_Check':True,'Safety':True,'Accessibility_Keyboard':True,
               'Trouble_Recovery':True,
-              'manual_links':'HOLD until rebuilt PDFs replace old non-final files'
+              'manual_links':'HOLD until rebuilt PDFs replace old non-final files',
+              'public_internal_labels':0
             },
             'tutorial':{
               'steps':10,
