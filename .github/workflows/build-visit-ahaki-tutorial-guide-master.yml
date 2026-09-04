@@ -1,0 +1,694 @@
+name: Build VISIT AHAKI Tutorial Guide Master V1.1
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-visit-ahaki-tutorial-guide-master.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Freeze approved presentation and SYSTEM scope
+        shell: bash
+        run: |
+          set -eux
+          test "$(sha256sum lp.html | awk '{print $1}')" = "60d6a1777a4ad87855628bcd07a7847583dcf5a810ab86be4e8269906ee6c5e7"
+          test "$(sha256sum flyer-visit-ahaki.html | awk '{print $1}')" = "4b3375973ddc87b07610d98478bb202ccb0c09bc2352b5f836bc92f9377c1865"
+          test "$(sha256sum DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf | awk '{print $1}')" = "e15295bf9b7709463f34f18eb79892fa24c019c3ed7e7e1dee7687462d4b0091"
+          test "$(sha256sum guide.html | awk '{print $1}')" = "3e4873586f3a464b4faf1664ba97eec8d371d3163f655f449d2364a0aec4791a"
+          test "$(sha256sum tutorial.html | awk '{print $1}')" = "aba37a2e83876046adcb8034c1cc07345886a66b402fdae5d0b2a00621a009c5"
+          test "$(sha256sum DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf | awk '{print $1}')" = "5c56f8c589891b1cab80fa9734f29a502b244176dda5c55f6b7bcc84d93363ac"
+          test "$(sha256sum DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf | awk '{print $1}')" = "716b50e76cf4470c4892a7310ffc5509370a8d5ea7c9ec19e0f278eeb1250399"
+
+          sha256sum \
+            lp.html flyer-visit-ahaki.html DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html demo.html system-check.html styles.css \
+            DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf \
+            > /tmp/frozen-before.sha256
+
+      - name: Build Guide Center and First10
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          guide = """<!doctype html>
+          <html lang="ja">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+            <title>Guide Center | DPRO 訪問マッサージ・鍼灸</title>
+            <link rel="stylesheet" href="styles.css">
+            <style>
+              :root{--guide-deep:#0a211a;--guide-green:#118565;--guide-mint:#18c98a;--guide-soft:#f3f8f6;--guide-line:#d9e6e1;--guide-muted:#5f726b}
+              *{box-sizing:border-box}
+              body{margin:0;background:#fff;color:#10231d}
+              .guide-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}
+              .guide-hero{padding:54px 0 28px}
+              .guide-hero h1{font-size:clamp(34px,6vw,58px);line-height:1.12;margin:0 0 12px}
+              .guide-hero p{max-width:820px;color:var(--guide-muted);font-size:17px}
+              .guide-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+              .guide-action{display:flex;min-height:66px;align-items:center;justify-content:center;text-align:center;padding:12px 16px;border-radius:16px;text-decoration:none;font-weight:900;border:1px solid var(--guide-line);background:#fff;color:#10231d}
+              .guide-action.primary{background:var(--guide-mint);border-color:var(--guide-mint);color:#052018}
+              .guide-action:focus-visible,.guide-link:focus-visible{outline:3px solid #0c6;outline-offset:3px}
+              .guide-status{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--guide-soft);color:#36564b}
+              .guide-groups{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:20px 0 64px}
+              .guide-group{border:1px solid var(--guide-line);border-radius:20px;padding:22px;background:#fff}
+              .guide-group.wide{grid-column:1/-1}
+              .guide-group h2{margin:0 0 8px;font-size:24px}
+              .guide-group p{margin:0 0 12px;color:var(--guide-muted)}
+              .guide-list{margin:0;padding-left:20px;color:#29453c}
+              .guide-list li{margin:7px 0}
+              .guide-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+              .guide-link{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border-radius:12px;text-decoration:none;font-weight:800;background:#eef7f3;border:1px solid #cfe4dc}
+              .guide-link.secondary{background:#fff}
+              .guide-disabled{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border-radius:12px;background:#f0f2f1;color:#75817d;border:1px solid #dde2df;font-weight:800}
+              .first10-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+              .first10-item{border:1px solid var(--guide-line);border-radius:12px;padding:12px;background:#fbfdfc}
+              .first10-item b{display:block;color:var(--guide-green);font-size:12px;letter-spacing:.08em}
+              .safety{background:#eff9f5}
+              .trouble{background:#fffaf0}
+              .manual-note{padding:12px 14px;border-left:4px solid #c3902e;background:#fff8ea;color:#654d20}
+              @media(max-width:760px){
+                .guide-actions,.guide-groups,.first10-grid{grid-template-columns:1fr}
+                .guide-group.wide{grid-column:auto}
+              }
+              @media(max-width:430px){
+                .guide-shell{width:calc(100% - 24px)}
+                .guide-hero{padding-top:38px}
+                .guide-action{min-height:54px}
+              }
+            </style>
+          </head>
+          <body>
+            <header>
+              <div class="bar">
+                <div class="brand">DPRO ガイドセンター</div>
+                <nav class="nav">
+                  <a href="demo.html">DEMOへ戻る</a>
+                  <a href="index.html">専用SYSTEM</a>
+                </nav>
+              </div>
+            </header>
+
+            <main class="guide-shell">
+              <section class="guide-hero">
+                <h1>操作に迷ったら、ここから。</h1>
+                <p>最初の10操作、役割別画面、安全ルール、運用前チェック、困ったときの戻り方をまとめています。公開Demoでは実在する患者・家族の情報を入力しません。</p>
+                <div class="guide-actions" aria-label="First10">
+                  <a id="startFirst10" class="guide-action primary" href="tutorial.html?mode=start">First10を開始</a>
+                  <a id="resumeFirst10" class="guide-action" href="tutorial.html?mode=resume">First10を再開</a>
+                  <a id="replayFirst10" class="guide-action" href="tutorial.html?mode=replay">最初から再体験</a>
+                </div>
+                <div id="first10Status" class="guide-status" aria-live="polite">First10の進捗を確認しています。</div>
+              </section>
+
+              <div class="guide-groups">
+                <section class="guide-group wide" data-group="first10">
+                  <h2>First10</h2>
+                  <p>最初に覚える操作を、ちょうど10個に絞って確認します。案内だけでは保存・送信・承認・Demo Resetを実行しません。</p>
+                  <div class="first10-grid">
+                    <div class="first10-item"><b>01</b>公開Demoの安全ルール</div>
+                    <div class="first10-item"><b>02</b>Owner / Officeの入口</div>
+                    <div class="first10-item"><b>03</b>今日の訪問</div>
+                    <div class="first10-item"><b>04</b>変更前の影響確認</div>
+                    <div class="first10-item"><b>05</b>請求準備</div>
+                    <div class="first10-item"><b>06</b>Staffの担当訪問</div>
+                    <div class="first10-item"><b>07</b>患者本人の予定</div>
+                    <div class="first10-item"><b>08</b>家族代理の表示範囲</div>
+                    <div class="first10-item"><b>09</b>安全な家族連絡</div>
+                    <div class="first10-item"><b>10</b>System Check</div>
+                  </div>
+                </section>
+
+                <section class="guide-group" data-group="owner">
+                  <h2>Owner / Office</h2>
+                  <p>事務所で毎日確認する入口です。</p>
+                  <ul class="guide-list">
+                    <li>今日の訪問・未割当・未記録・未連絡</li>
+                    <li>変更前の影響確認</li>
+                    <li>今月の請求準備</li>
+                    <li>健康情報を含めない安全な家族連絡</li>
+                  </ul>
+                  <div class="guide-links"><a class="guide-link" href="owner.html">Owner / Office画面</a></div>
+                </section>
+
+                <section class="guide-group" data-group="staff">
+                  <h2>Staff</h2>
+                  <p>施術者は自分に割り当てられた訪問だけを確認します。</p>
+                  <ul class="guide-list">
+                    <li>本日の担当訪問</li>
+                    <li>到着・施術記録・完了</li>
+                    <li>必要な訪問先情報の確認</li>
+                  </ul>
+                  <div class="guide-links"><a class="guide-link" href="staff.html">Staff画面</a></div>
+                </section>
+
+                <section class="guide-group" data-group="patient-family">
+                  <h2>Patient / Family</h2>
+                  <p>患者本人と家族代理を分け、必要な範囲だけを表示します。</p>
+                  <ul class="guide-list">
+                    <li>患者本人の訪問予定</li>
+                    <li>家族代理は同意範囲を超える施術メモを見ない</li>
+                    <li>変更希望は確定変更ではなく、運営側の確認待ち</li>
+                  </ul>
+                  <div class="guide-links"><a class="guide-link" href="customer.html">Patient / Family画面</a></div>
+                </section>
+
+                <section class="guide-group" data-group="system-check">
+                  <h2>System Check</h2>
+                  <p>Ownerが運用前に、安全設定と環境状態を一括確認します。</p>
+                  <div class="guide-links"><a class="guide-link" href="system-check.html">System Checkを開く</a></div>
+                </section>
+
+                <section class="guide-group safety" data-group="safety">
+                  <h2>安全に使うために</h2>
+                  <ul class="guide-list">
+                    <li>公開Demoに実在する患者・家族の氏名、住所、電話番号、健康情報を入力しない</li>
+                    <li>First10は業務状態を自動変更しない</li>
+                    <li>家族代理には同意範囲を超える施術メモを表示しない</li>
+                    <li>健康情報を含む内容をLINEへ送らない</li>
+                    <li>SecretやTokenを公開画面・PDFへ記載しない</li>
+                  </ul>
+                </section>
+
+                <section class="guide-group" data-group="accessibility">
+                  <h2>キーボード・タッチ操作</h2>
+                  <ul class="guide-list">
+                    <li>Tabで操作項目を移動</li>
+                    <li>Enter / Spaceでボタンやリンクを操作</li>
+                    <li>EscでFirst10を閉じてGuide Centerへ戻る</li>
+                    <li>マウス・タッチでも同じ操作が可能</li>
+                  </ul>
+                </section>
+
+                <section class="guide-group trouble" data-group="trouble">
+                  <h2>困ったとき・戻り方</h2>
+                  <ul class="guide-list">
+                    <li>途中で閉じても、First10の進捗だけを保存</li>
+                    <li>Resumeで同じ続きから再開</li>
+                    <li>ReplayでStep 1から再体験</li>
+                    <li>First10をやり直しても業務データは削除しない</li>
+                    <li>画面の状態確認はSystem Checkへ戻る</li>
+                  </ul>
+                  <div class="guide-links">
+                    <a class="guide-link secondary" href="demo.html">DEMOへ戻る</a>
+                    <a class="guide-link secondary" href="system-check.html">System Check</a>
+                  </div>
+                </section>
+
+                <section class="guide-group wide" data-group="manuals">
+                  <h2>保存版PDF</h2>
+                  <p>Quick Startと詳細操作マニュアルは、現在のCENTRAL MASTERに合わせて再制作中です。</p>
+                  <div class="manual-note">旧PDFはFINAL基準として使用しません。新しい保存版PDFのQA完了後、このGuide Centerから正式版へ接続します。</div>
+                  <div class="guide-links">
+                    <span class="guide-disabled" aria-disabled="true">Quick Start 更新準備中</span>
+                    <span class="guide-disabled" aria-disabled="true">詳細マニュアル 更新準備中</span>
+                  </div>
+                </section>
+              </div>
+            </main>
+
+            <script>
+              (() => {
+                const KEY = 'dpro_visit_ahaki_first10_v11';
+                const out = document.querySelector('#first10Status');
+                try {
+                  const state = JSON.parse(localStorage.getItem(KEY) || 'null');
+                  if (!state) out.textContent = '未開始です。StartでStep 1から始めます。';
+                  else if (state.completed) out.textContent = 'First10は完了済みです。Replayで最初から再体験できます。';
+                  else out.textContent = `進捗: Step ${Math.min(10, Number(state.current || 0) + 1)} / 10。Resumeで続きから再開できます。`;
+                } catch {
+                  out.textContent = '進捗を読み込めませんでした。StartでStep 1から始められます。';
+                }
+              })();
+            </script>
+          </body>
+          </html>
+          """
+
+          tutorial = """<!doctype html>
+          <html lang="ja">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+            <title>First10 | DPRO 訪問マッサージ・鍼灸</title>
+            <link rel="stylesheet" href="styles.css">
+            <style>
+              :root{--t-deep:#0a211a;--t-green:#118565;--t-mint:#18c98a;--t-soft:#f3f8f6;--t-line:#d9e6e1;--t-muted:#5f726b}
+              *{box-sizing:border-box}
+              body{margin:0;background:#f7faf8;color:#10231d}
+              .t-shell{width:min(880px,calc(100% - 32px));margin:0 auto;padding:48px 0 72px}
+              .t-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px}
+              .t-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;color:var(--t-green)}
+              .t-progress-text{font-weight:900}
+              .t-progress{height:10px;background:#dfeae5;border-radius:999px;overflow:hidden;margin:10px 0 28px}
+              .t-progress>span{display:block;height:100%;background:var(--t-mint);width:10%;transition:width .2s ease}
+              .t-card{background:#fff;border:1px solid var(--t-line);border-radius:24px;padding:28px;box-shadow:0 12px 30px #0d2e2310}
+              .t-step-no{font-size:13px;font-weight:900;color:var(--t-green);letter-spacing:.1em}
+              .t-card h1{font-size:clamp(30px,6vw,48px);line-height:1.18;margin:8px 0 14px}
+              .t-role{display:inline-flex;min-height:34px;align-items:center;padding:0 12px;border-radius:999px;background:#edf7f3;color:#2d5a4a;font-weight:800;font-size:13px}
+              .t-body{font-size:17px;color:#38544b;margin:18px 0}
+              .t-safe{padding:14px 16px;border-left:4px solid var(--t-green);background:#eff9f5;color:#34584b;margin:18px 0}
+              .t-screen-link{display:inline-flex;min-height:46px;align-items:center;padding:0 16px;border-radius:12px;text-decoration:none;font-weight:900;background:#eef7f3;border:1px solid #cfe4dc}
+              .t-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+              .t-btn{min-height:48px;border:1px solid var(--t-line);border-radius:12px;background:#fff;color:#10231d;font:inherit;font-weight:900;cursor:pointer}
+              .t-btn.primary{background:var(--t-mint);border-color:var(--t-mint);color:#052018}
+              .t-btn:disabled{opacity:.45;cursor:not-allowed}
+              .t-btn:focus-visible,.t-screen-link:focus-visible{outline:3px solid #0c6;outline-offset:3px}
+              .t-help{margin-top:18px;color:var(--t-muted);font-size:14px}
+              .t-complete{text-align:center}
+              .t-complete h1{margin-top:8px}
+              .t-complete-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+              .t-complete-actions a{display:inline-flex;min-height:48px;align-items:center;padding:0 18px;border-radius:12px;text-decoration:none;font-weight:900;border:1px solid var(--t-line);background:#fff}
+              .t-complete-actions a.primary{background:var(--t-mint);border-color:var(--t-mint)}
+              @media(max-width:620px){
+                .t-shell{width:calc(100% - 24px);padding-top:30px}
+                .t-card{padding:20px}
+                .t-controls{grid-template-columns:1fr 1fr}
+              }
+            </style>
+          </head>
+          <body>
+            <header>
+              <div class="bar">
+                <div class="brand">DPRO First10</div>
+                <nav class="nav"><a href="guide.html">Guide Center</a></nav>
+              </div>
+            </header>
+
+            <main class="t-shell">
+              <div class="t-top">
+                <div>
+                  <div class="t-kicker">VISIT MASSAGE / ACUPUNCTURE</div>
+                  <div id="progressText" class="t-progress-text">Step 1 / 10</div>
+                </div>
+                <button id="closeTop" class="t-btn" type="button">閉じる</button>
+              </div>
+              <div class="t-progress" aria-hidden="true"><span id="progressBar"></span></div>
+              <section id="tutorialCard" class="t-card" aria-live="polite"></section>
+              <p class="t-help">Back / Next / Skip / Close を使えます。Escでも閉じられます。First10の操作だけでは、保存・送信・承認・Demo Resetを実行しません。</p>
+            </main>
+
+            <script>
+              (() => {
+                const KEY = 'dpro_visit_ahaki_first10_v11';
+                const STEPS = [
+                  {title:'公開Demoの安全ルール',role:'共通',url:'demo.html',body:'最初に、公開Demoが合成データを使う確認環境であることを確認します。実在する患者・家族の情報は入力しません。',safe:'このStepではDemo Resetや業務保存を実行しません。'},
+                  {title:'Owner / Officeの入口',role:'Owner / Office',url:'owner.html',body:'Owner / Office画面の入口と「今日の訪問」を確認します。役割の開始操作は、画面を開いたあと利用者自身が行います。',safe:'First10から自動ログインしません。'},
+                  {title:'今日の訪問を確認',role:'Owner / Office',url:'owner.html',body:'未割当・未記録・未連絡・請求準備を、訪問単位で確認する画面だと理解します。',safe:'First10は訪問の状態を変更しません。'},
+                  {title:'変更前の影響を確認',role:'Owner',url:'owner.html',body:'継続予定を変更する前に、担当衝突・施設人数区分・通知・請求準備への影響を確認する入口を見ます。',safe:'変更の確定はFirst10から実行しません。'},
+                  {title:'請求準備の入口を確認',role:'Owner / Office',url:'owner.html',body:'今月の請求準備状況を確認する入口を把握します。',safe:'請求処理や確定操作をFirst10から実行しません。'},
+                  {title:'Staffの担当訪問を確認',role:'Staff',url:'staff.html',body:'Staff画面では、自分に割り当てられた訪問だけを確認する役割境界を見ます。',safe:'到着・記録・完了をFirst10が自動で押すことはありません。'},
+                  {title:'患者本人の予定を確認',role:'Patient',url:'customer.html',body:'患者本人の訪問予定画面を確認します。',safe:'変更希望の送信をFirst10から実行しません。'},
+                  {title:'家族代理の表示範囲を確認',role:'Family',url:'customer.html',body:'家族代理は患者本人とは別に扱い、同意範囲を超える施術メモを見ないことを確認します。変更希望は運営側の確認待ちです。',safe:'First10から変更希望を送信しません。'},
+                  {title:'安全な家族連絡を確認',role:'Owner / Office',url:'owner.html',body:'健康情報を含めない承認済み通知の入口を確認します。',safe:'First10からLINE通知を送信しません。'},
+                  {title:'System Checkを確認',role:'Owner',url:'system-check.html',body:'患者情報やSecretを表示せず、運用前の安全設定と環境状態を確認する画面へ戻れることを確認します。',safe:'ここまでのFirst10は業務データを変更せず完了します。'}
+                ];
+
+                const card = document.querySelector('#tutorialCard');
+                const progressText = document.querySelector('#progressText');
+                const progressBar = document.querySelector('#progressBar');
+                const closeTop = document.querySelector('#closeTop');
+
+                function fresh(){
+                  return {current:0,completed:false,skipped:[],updatedAt:new Date().toISOString()};
+                }
+                function read(){
+                  try{
+                    const v = JSON.parse(localStorage.getItem(KEY) || 'null');
+                    if (!v || typeof v.current !== 'number') return null;
+                    v.current = Math.max(0,Math.min(STEPS.length-1,v.current));
+                    v.skipped = Array.isArray(v.skipped) ? v.skipped : [];
+                    return v;
+                  }catch{return null}
+                }
+                function save(state){
+                  state.updatedAt = new Date().toISOString();
+                  localStorage.setItem(KEY,JSON.stringify(state));
+                }
+
+                const mode = new URLSearchParams(location.search).get('mode');
+                let state;
+                if(mode === 'start' || mode === 'replay'){
+                  state = fresh();
+                  save(state);
+                }else{
+                  state = read() || fresh();
+                  save(state);
+                }
+
+                function closeTutorial(){
+                  save(state);
+                  location.href = 'guide.html';
+                }
+                function move(delta){
+                  state.completed = false;
+                  state.current = Math.max(0,Math.min(STEPS.length-1,state.current + delta));
+                  save(state);
+                  render();
+                }
+                function next(){
+                  if(state.current >= STEPS.length - 1){
+                    state.completed = true;
+                    save(state);
+                    render();
+                  }else{
+                    state.current += 1;
+                    save(state);
+                    render();
+                  }
+                }
+                function skip(){
+                  if(!state.skipped.includes(state.current)) state.skipped.push(state.current);
+                  next();
+                }
+                function replay(){
+                  state = fresh();
+                  save(state);
+                  render();
+                }
+
+                function render(){
+                  if(state.completed){
+                    progressText.textContent = '10 / 10 完了';
+                    progressBar.style.width = '100%';
+                    card.innerHTML = `
+                      <div class="t-complete">
+                        <div class="t-step-no">COMPLETE</div>
+                        <h1>First10が完了しました。</h1>
+                        <p class="t-body">役割別の入口、安全ルール、System Checkまで確認できました。実際の業務操作は各画面で必要なときだけ行います。</p>
+                        <div class="t-complete-actions">
+                          <a class="primary" href="guide.html">Guide Centerへ戻る</a>
+                          <a href="tutorial.html?mode=replay">最初から再体験</a>
+                        </div>
+                      </div>`;
+                    return;
+                  }
+
+                  const step = STEPS[state.current];
+                  progressText.textContent = `Step ${state.current + 1} / ${STEPS.length}`;
+                  progressBar.style.width = `${((state.current + 1) / STEPS.length) * 100}%`;
+                  card.innerHTML = `
+                    <div class="t-step-no">STEP ${String(state.current + 1).padStart(2,'0')} / 10</div>
+                    <h1>${step.title}</h1>
+                    <span class="t-role">${step.role}</span>
+                    <p class="t-body">${step.body}</p>
+                    <div class="t-safe">${step.safe}</div>
+                    <a class="t-screen-link" href="${step.url}" target="_blank" rel="noopener">現在の画面を別タブで確認</a>
+                    <div class="t-controls">
+                      <button id="back" class="t-btn" type="button" ${state.current===0?'disabled':''}>Back</button>
+                      <button id="next" class="t-btn primary" type="button">${state.current===STEPS.length-1?'完了':'Next'}</button>
+                      <button id="skip" class="t-btn" type="button">Skip</button>
+                      <button id="close" class="t-btn" type="button">Close</button>
+                    </div>`;
+                  document.querySelector('#back').onclick = () => move(-1);
+                  document.querySelector('#next').onclick = next;
+                  document.querySelector('#skip').onclick = skip;
+                  document.querySelector('#close').onclick = closeTutorial;
+                }
+
+                closeTop.onclick = closeTutorial;
+                document.addEventListener('keydown', (e) => {
+                  if(e.key === 'Escape'){
+                    e.preventDefault();
+                    closeTutorial();
+                  }
+                });
+                render();
+              })();
+            </script>
+          </body>
+          </html>
+          """
+
+          Path('guide.html').write_text(guide.strip() + '\n',encoding='utf-8')
+          Path('tutorial.html').write_text(tutorial.strip() + '\n',encoding='utf-8')
+          print('GUIDE_TUTORIAL_MASTER_BUILD=APPLIED')
+          PY
+
+      - name: Static source QA
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re, json
+
+          guide=Path('guide.html').read_text(encoding='utf-8')
+          tutorial=Path('tutorial.html').read_text(encoding='utf-8')
+
+          checks={}
+          checks['guide_start_resume_replay']=all(x in guide for x in ['First10を開始','First10を再開','最初から再体験'])
+          checks['guide_groups']=all(f'data-group="{x}"' in guide for x in ['first10','owner','staff','patient-family','system-check','safety','accessibility','trouble','manuals'])
+          checks['guide_roles']=all(x in guide for x in ['owner.html','staff.html','customer.html','system-check.html'])
+          checks['guide_old_pdf_links_removed']='DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf' not in guide and 'DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf' not in guide
+          checks['tutorial_exact10']=tutorial.count("{title:'") == 10
+          checks['tutorial_state_key']="dpro_visit_ahaki_first10_v11" in tutorial
+          checks['tutorial_controls']=all(x in tutorial for x in ['Back','Next','Skip','Close','Escape'])
+          checks['tutorial_no_business_api']=all(x not in tutorial for x in ['DPRO.api(','/demo/reset','/communications','method:\\'POST\\'','method:"POST"','fetch('])
+          checks['no_old_5step']='最初の5ステップ' not in tutorial and '5ステップで' not in guide
+          checks['no_internal_visible_labels']=all(x not in (guide+tutorial) for x in ['CANONICAL','business mutation','TUTORIAL STATE','R4 CENTRAL','STANDARD V1.1 LOCK'])
+
+          if not all(checks.values()):
+              raise SystemExit(json.dumps(checks,ensure_ascii=False,indent=2))
+
+          Path('presentation-qa').mkdir(exist_ok=True)
+          Path('presentation-qa/TUTORIAL_GUIDE_STATIC_QA_V1.1.json').write_text(
+              json.dumps({**checks,'result':'PASS'},ensure_ascii=False,indent=2),
+              encoding='utf-8'
+          )
+          print('TUTORIAL_GUIDE_STATIC_QA=PASS')
+          PY
+
+      - name: Install browser QA
+        shell: bash
+        run: |
+          set -eux
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+          mkdir -p presentation-qa/tutorial-guide-v1.1
+
+      - name: Browser QA First10 state and responsive UI
+        shell: bash
+        run: |
+          set -eux
+          python3 -m http.server 4173 >/tmp/visit-ahaki-http.log 2>&1 &
+          echo $! >/tmp/visit-ahaki-http.pid
+          sleep 1
+
+          cat > qa-tutorial-guide.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs=require('fs');
+
+          const BASE='http://127.0.0.1:4173/';
+          const widths=[375,390,430,768,1280,1440];
+          const results={responsive:[],stateFlow:{},requests:[],result:'PENDING'};
+
+          function attachGuards(page){
+            const errors=[];
+            const badRequests=[];
+            page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            page.on('request',r=>{
+              const u=r.url(), method=r.method();
+              if(method!=='GET' && method!=='HEAD') badRequests.push(method+' '+u);
+              if(u.includes('workers.dev')) badRequests.push('WORKER '+method+' '+u);
+            });
+            return {errors,badRequests};
+          }
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+
+            for(const width of widths){
+              for(const pageName of ['guide.html','tutorial.html?mode=start']){
+                const context=await browser.newContext({viewport:{width,height:900}});
+                const page=await context.newPage();
+                const guard=attachGuards(page);
+                await page.goto(BASE+pageName,{waitUntil:'networkidle'});
+                const metrics=await page.evaluate(()=>({
+                  scrollWidth:document.documentElement.scrollWidth,
+                  clientWidth:document.documentElement.clientWidth,
+                  minButtonHeight:Math.min(...[...document.querySelectorAll('button,a.guide-action,a.guide-link,a.t-screen-link')].map(x=>x.getBoundingClientRect().height).filter(Boolean))
+                }));
+                if(metrics.scrollWidth>metrics.clientWidth+1) throw new Error(`overflow ${pageName} ${width}`);
+                if(metrics.minButtonHeight<44) throw new Error(`control<44 ${pageName} ${width}: ${metrics.minButtonHeight}`);
+                if(guard.errors.length) throw new Error(`console ${pageName} ${width}: ${guard.errors.join(' | ')}`);
+                if(guard.badRequests.length) throw new Error(`mutation request ${pageName} ${width}: ${guard.badRequests.join(' | ')}`);
+                const out=`presentation-qa/tutorial-guide-v1.1/${pageName.startsWith('guide')?'guide':'tutorial'}-${width}.png`;
+                await page.screenshot({path:out,fullPage:true});
+                results.responsive.push({page:pageName,width,...metrics,result:'PASS'});
+                await context.close();
+              }
+            }
+
+            const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});
+            const page=await context.newPage();
+            const guard=attachGuards(page);
+
+            await page.goto(BASE+'guide.html',{waitUntil:'networkidle'});
+            await page.locator('#startFirst10').tap();
+            await page.waitForURL('**/tutorial.html?mode=start');
+            let text=await page.locator('#progressText').innerText();
+            if(text!=='Step 1 / 10') throw new Error('Start not step1: '+text);
+
+            await page.locator('#next').tap();
+            text=await page.locator('#progressText').innerText();
+            if(text!=='Step 2 / 10') throw new Error('Next not step2: '+text);
+
+            await page.locator('#close').tap();
+            await page.waitForURL('**/guide.html');
+            await page.locator('#resumeFirst10').tap();
+            await page.waitForURL('**/tutorial.html?mode=resume');
+            text=await page.locator('#progressText').innerText();
+            if(text!=='Step 2 / 10') throw new Error('Resume not step2: '+text);
+
+            await page.locator('#back').tap();
+            text=await page.locator('#progressText').innerText();
+            if(text!=='Step 1 / 10') throw new Error('Back not step1: '+text);
+
+            await page.locator('#skip').tap();
+            text=await page.locator('#progressText').innerText();
+            if(text!=='Step 2 / 10') throw new Error('Skip not step2: '+text);
+
+            await page.keyboard.press('Escape');
+            await page.waitForURL('**/guide.html');
+
+            await page.locator('#replayFirst10').tap();
+            await page.waitForURL('**/tutorial.html?mode=replay');
+            text=await page.locator('#progressText').innerText();
+            if(text!=='Step 1 / 10') throw new Error('Replay not step1: '+text);
+
+            await page.keyboard.press('Tab');
+            const focus=await page.evaluate(()=>{
+              const e=document.activeElement, cs=getComputedStyle(e);
+              return {tag:e.tagName,outlineStyle:cs.outlineStyle,outlineWidth:cs.outlineWidth};
+            });
+            if(!['BUTTON','A'].includes(focus.tag)) throw new Error('keyboard focus target');
+            if(focus.outlineStyle==='none' || focus.outlineWidth==='0px') throw new Error('focus-visible missing');
+
+            for(let i=0;i<10;i++){
+              const next=page.locator('#next');
+              if(await next.count()) await next.tap();
+            }
+            const complete=await page.locator('.t-complete h1').innerText();
+            if(!complete.includes('完了')) throw new Error('completion view missing');
+
+            const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('dpro_visit_ahaki_first10_v11')));
+            if(!state || state.completed!==true) throw new Error('state completion missing');
+            if(guard.errors.length) throw new Error('state flow console: '+guard.errors.join(' | '));
+            if(guard.badRequests.length) throw new Error('state flow mutation: '+guard.badRequests.join(' | '));
+
+            results.stateFlow={
+              Start:'PASS',Resume:'PASS',Replay:'PASS',Back:'PASS',Skip:'PASS',
+              Close:'PASS',Esc:'PASS',Touch:'PASS',KeyboardFocus:'PASS',
+              Complete10:'PASS',businessMutationRequests:0
+            };
+            await context.close();
+
+            results.result='GREEN';
+            fs.writeFileSync('presentation-qa/TUTORIAL_GUIDE_BROWSER_QA_V1.1.json',JSON.stringify(results,null,2));
+            await browser.close();
+            console.log('TUTORIAL_GUIDE_BROWSER_QA=GREEN');
+          })();
+          JS
+
+          node qa-tutorial-guide.js
+          rm -f qa-tutorial-guide.js
+          kill "$(cat /tmp/visit-ahaki-http.pid)" || true
+
+      - name: Verify frozen scope byte-identical
+        shell: bash
+        run: |
+          set -eux
+          sha256sum \
+            lp.html flyer-visit-ahaki.html DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html demo.html system-check.html styles.css \
+            DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf \
+            | diff - /tmp/frozen-before.sha256
+          echo PRESENTATION_SYSTEM_FROZEN_SCOPE=PASS
+
+      - name: Final Tutorial Guide QA summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, hashlib
+
+          summary={
+            'master':'CENTRAL PRESENTATION / TUTORIAL MASTER V1.2',
+            'tutorial_standard':'First10 exactly 10',
+            'guide_center':{
+              'Start':True,'Resume':True,'Replay':True,
+              'Owner_Office':True,'Staff':True,'Patient_Family':True,
+              'System_Check':True,'Safety':True,'Accessibility_Keyboard':True,
+              'Trouble_Recovery':True,
+              'manual_links':'HOLD until rebuilt PDFs replace old non-final files'
+            },
+            'tutorial':{
+              'steps':10,
+              'Start_Resume_Replay':True,
+              'Back_Next_Skip_Close_Esc':True,
+              'touch_mouse_keyboard':True,
+              'business_mutation':0,
+              'storage_key':'dpro_visit_ahaki_first10_v11'
+            },
+            'responsive_widths':[375,390,430,768,1280,1440],
+            'frozen_scope':'PASS',
+            'result':'GREEN_WITH_MANUAL_LINK_HOLD',
+            'complete_final_lock':'HOLD'
+          }
+          summary['sha256']={
+            'guide.html':hashlib.sha256(Path('guide.html').read_bytes()).hexdigest(),
+            'tutorial.html':hashlib.sha256(Path('tutorial.html').read_bytes()).hexdigest()
+          }
+          Path('presentation-qa/TUTORIAL_GUIDE_MASTER_QA_V1.1.json').write_text(
+            json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf-8'
+          )
+          print(json.dumps(summary,ensure_ascii=False,indent=2))
+          PY
+
+      - name: Commit Tutorial Guide master artifacts
+        shell: bash
+        run: |
+          set -eux
+          rm -rf node_modules package.json package-lock.json
+          git rm .github/workflows/build-visit-ahaki-tutorial-guide-master.yml
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+          git add guide.html tutorial.html \
+            presentation-qa/TUTORIAL_GUIDE_STATIC_QA_V1.1.json \
+            presentation-qa/TUTORIAL_GUIDE_BROWSER_QA_V1.1.json \
+            presentation-qa/TUTORIAL_GUIDE_MASTER_QA_V1.1.json \
+            presentation-qa/tutorial-guide-v1.1
+
+          git diff --cached --name-only | tee /tmp/staged.txt
+          python - <<'PY'
+          from pathlib import Path
+          paths=set(Path('/tmp/staged.txt').read_text().splitlines())
+          allowed={
+            '.github/workflows/build-visit-ahaki-tutorial-guide-master.yml',
+            'guide.html','tutorial.html',
+            'presentation-qa/TUTORIAL_GUIDE_STATIC_QA_V1.1.json',
+            'presentation-qa/TUTORIAL_GUIDE_BROWSER_QA_V1.1.json',
+            'presentation-qa/TUTORIAL_GUIDE_MASTER_QA_V1.1.json'
+          }
+          for p in paths:
+              if p.startswith('presentation-qa/tutorial-guide-v1.1/'): continue
+              if p not in allowed: raise SystemExit(f'Unexpected staged path: {p}')
+          PY
+
+          git commit -m "Align VISIT AHAKI Tutorial and Guide Center with master"
+          git push
