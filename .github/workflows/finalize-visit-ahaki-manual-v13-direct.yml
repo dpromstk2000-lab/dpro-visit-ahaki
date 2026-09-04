@@ -1,0 +1,564 @@
+name: Finalize VISIT AHAKI Manual Public Copy V1.3 Direct
+
+on:
+  push:
+    paths:
+      - ".github/workflows/finalize-visit-ahaki-manual-v13-direct.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lock approved baseline and frozen scope
+        shell: bash
+        run: |
+          set -eux
+          git merge-base --is-ancestor 2cded82290fffc5012bfbc8f2728a54379158d1e HEAD
+          test "$(sha256sum guide.html | awk '{print $1}')" = "bb818d6f84b81e2ca923684c1a5169ee64416ea03127f1a253f957105d4bd91d"
+
+          sha256sum \
+            guide.html tutorial.html \
+            lp.html flyer-visit-ahaki.html DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html demo.html system-check.html styles.css \
+            > /tmp/frozen-before.sha256
+
+      - name: Apply V1.3 owner-facing copy clean
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def apply(path, pairs):
+              p = Path(path)
+              s = p.read_text(encoding='utf-8')
+              for old, new, label in pairs:
+                  count = s.count(old)
+                  if count != 1:
+                      raise SystemExit(f'{path}: {label}: expected 1 match, got {count}')
+                  s = s.replace(old, new)
+              p.write_text(s, encoding='utf-8')
+
+          quick_pairs = [
+              ('QUICK START MASTER V1.1','保存版 クイックスタート','badge'),
+              ('最初に覚える操作をexactly 10で確認します。','最初に覚える操作を10ステップで確認します。','exactly copy'),
+              ('Current public LIVE screen evidence only','現在公開中の実画面を掲載','footer live'),
+              ('First10 exactly 10','First10 全10ステップ','footer first10'),
+              ('DPRO 訪問マッサージ・鍼灸 / Role & Check','DPRO 訪問マッサージ・鍼灸 / 役割別入口・運用前チェック','role eyebrow'),
+              ('予定確認、同意scope、変更希望。家族へ施術メモを一律表示しません。','予定確認、同意範囲、変更希望。家族へ施術メモを一律表示しません。','scope'),
+              ('System identity、Runtime、Auth boundary、Demo / Production Guardなどを、患者情報やSecretを出さず確認します。','システム情報、動作環境、権限の範囲、Demo / 本番の安全設定などを、患者情報や秘密情報を表示せず確認します。','system jargon'),
+              ('<h3>Safety</h3>','<h3>安全な利用範囲</h3>','safety heading'),
+              ('実tenant / Owner Auth / 顧客Auth / 契約者固有LINE設定は標準製品Demoでは作成しません。正式契約後のREADY工程で設定します。','お客様専用環境、Owner・顧客の利用者アカウント、契約者専用LINE設定は標準製品Demoでは作成しません。正式契約後に個別設定します。','contract boundary'),
+              ('保存版 / A4 portrait','保存版 / A4縦','a4 footer'),
+          ]
+
+          detailed_pairs = [
+              ('DETAILED MANUAL MASTER V1.1','保存版 詳細操作マニュアル','badge'),
+              ('First10のStart / Resume / Replay、役割別入口、System Check、Safety、Trouble Recovery、Manualsをまとめています。','First10のStart / Resume / Replay、役割別入口、System Check、安全な使い方、困ったときの戻り方、保存版PDFをまとめています。','guide copy'),
+              ('公開Demoへ実在する患者・家族の情報を入力しません。実tenant / Owner Auth / 顧客Auth / 契約者固有LINE資格情報 / Production切替は正式契約後のREADY工程です。','公開Demoへ実在する患者・家族の情報を入力しません。お客様専用環境、利用者アカウント、契約者専用LINE連携、本番利用開始は正式契約後に個別設定します。','manual boundary'),
+              ('Guide Center / Start','Guide Center / はじめ方','p1 footer'),
+              ('First10 - exactly 10','First10 - 全10ステップ','first10 heading'),
+              ('途中の進捗はTutorial stateだけを保存します。','途中の進捗はFirst10の進み具合だけを保存します。','tutorial state body'),
+              ('First10 / Tutorial state only','First10 / 進捗だけを保存','tutorial state footer'),
+              ('Owner / Visit Day Control Tower','Owner / 今日の訪問','owner footer'),
+              ('DPRO 訪問マッサージ・鍼灸 / Change & Claim','DPRO 訪問マッサージ・鍼灸 / 変更・請求準備','change eyebrow'),
+              ('変更は、確定前にImpactを確認。','変更は、確定前に影響を確認。','impact heading'),
+              ('変更Impact Preflight','変更前の影響確認','impact name'),
+              ('<span>Impact確認</span>','<span>影響確認</span>','impact flow'),
+              ('<h2>Claim Readiness</h2>','<h2>請求準備</h2>','claim heading'),
+              ('Impact / Claim readiness','変更前確認・請求準備','claim footer'),
+              ('原記録を保持するversioned運用。First10は到着・保存・完了を自動実行しません。','原記録を残し、更新履歴を保持する運用です。First10は到着・保存・完了を自動実行しません。','versioned'),
+              ('Staff / field role','Staff / 現場での操作','staff footer'),
+              ('患者本人とは別session。同意scopeを超える施術メモを表示しません。','患者本人とは別の利用者として扱い、同意範囲を超える施術メモを表示しません。','session scope'),
+              ('Patient / Family scope','患者・家族 / 表示範囲','family footer'),
+
+              # V1.3 residual public-copy cleanup
+              ('家族の同意scopeを超えない','家族の同意範囲を超えない','line scope'),
+              ('正式契約後に事業者ごとの資格情報と受信者Bindingを設定・検証してから有効化します。','正式契約後に事業者ごとのLINE連携情報と受信者の紐付けを設定・確認してから有効化します。','faq binding'),
+              ('同意scopeを超える情報は表示しません。','同意範囲を超える情報は表示しません。','faq scope'),
+
+              ('DPRO 訪問マッサージ・鍼灸 / Safe Communication','DPRO 訪問マッサージ・鍼灸 / 安全な家族連絡','communication eyebrow'),
+              ('実契約者のLINE資格情報は契約後にBinding','契約者専用のLINE連携情報は契約後に紐付け','line binding'),
+              ('LINE / safe notification boundary','LINE / 安全な通知範囲','line footer'),
+              ('<li>System identity</li>','<li>システム情報</li>','system identity'),
+              ('<li>Runtime mode</li>','<li>動作環境</li>','runtime'),
+              ('<li>Auth boundary</li>','<li>権限の範囲</li>','auth boundary'),
+              ('<li>Demo / Production Guard</li>','<li>Demo / 本番の安全設定</li>','production guard'),
+              ('<li>Database / LINE binding readiness</li>','<li>データベース・LINE連携の準備状態</li>','binding readiness'),
+              ('患者情報やSecret / TokenをSystem CheckやManualへ表示しません。契約後に必要な設定はREADY工程で行います。','患者情報や秘密情報をSystem Checkや保存版PDFへ表示しません。契約後に必要な設定は個別設定工程で行います。','secret ready'),
+              ('System Check / safe preflight','System Check / 運用前確認','system footer'),
+              ('Safety / Accessibility / Trouble Recovery','安全な使い方・操作方法・困ったとき','safety title'),
+              ('<h2>Safety</h2>','<h2>安全</h2>','safety card'),
+              ('<h2>Accessibility</h2>','<h2>操作方法</h2>','accessibility card'),
+              ('<h2>Trouble</h2>','<h2>困ったとき</h2>','trouble card'),
+              ('Safety / Accessibility / Trouble','安全・操作方法・困ったとき','safety footer'),
+              ('DPRO 訪問マッサージ・鍼灸 / FAQ & READY','DPRO 訪問マッサージ・鍼灸 / FAQ・契約後設定','faq eyebrow'),
+              ('FAQ / 契約後READY / 保存版チェック','FAQ・契約後設定・保存版チェック','faq heading'),
+              ('<h2>Post-contract settings</h2>','<h2>契約後に設定する項目</h2>','post contract heading'),
+              ('<li>実tenant作成</li>','<li>お客様専用環境の設定</li>','tenant item'),
+              ('<li>Owner Auth登録</li>','<li>Ownerアカウントの設定</li>','owner auth item'),
+              ('<li>Staff / Patient / Familyの本番利用者設定</li>','<li>Staff・患者本人・家族代理の利用者設定</li>','users item'),
+              ('<li>LINE資格情報・受信者Binding</li>','<li>LINE連携情報・受信者紐付け</li>','line item'),
+              ('<li>Production System Check</li>','<li>本番環境のSystem Check</li>','production check item'),
+              ('<li>端末QA後に本番切替</li>','<li>利用端末で確認後に本番利用開始</li>','device item'),
+              ('□ 契約後READYの境界を理解','□ 契約後に行う設定範囲を確認','ready checklist'),
+              ('FAQ / READY / checklist','FAQ / 契約後設定 / チェック','faq footer'),
+          ]
+
+          apply('manuals/quick-start-master-v1.1.html', quick_pairs)
+          apply('manuals/detailed-manual-master-v1.1.html', detailed_pairs)
+          print('MANUAL_PUBLIC_COPY_V1.3=APPLIED')
+          PY
+
+      - name: Static public-copy guard
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import json
+
+          class VisibleText(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.skip = 0
+                  self.parts = []
+              def handle_starttag(self, tag, attrs):
+                  if tag in ('style','script'):
+                      self.skip += 1
+              def handle_endtag(self, tag):
+                  if tag in ('style','script') and self.skip:
+                      self.skip -= 1
+              def handle_data(self, data):
+                  if not self.skip:
+                      self.parts.append(data)
+
+          banned = [
+              'exactly 10','Tutorial state','System identity','Runtime',
+              'Auth boundary','Production Guard','tenant','Owner Auth','顧客Auth',
+              'scope','Binding','versioned','READY工程','契約後READY',
+              'Post-contract settings','field role','safe notification boundary',
+              'Claim Readiness','Impact Preflight',
+              'Current public LIVE screen evidence only','MASTER V1.1','A4 portrait'
+          ]
+          required = [
+              'First10 全10ステップ','現在公開中の実画面を掲載',
+              '安全な利用範囲','お客様専用環境',
+              'First10 - 全10ステップ','変更前の影響確認',
+              '更新履歴を保持する運用','同意範囲',
+              '安全な家族連絡','本番の安全設定',
+              '契約後に設定する項目'
+          ]
+
+          report = {}
+          combined = ''
+          for path in [
+              'manuals/quick-start-master-v1.1.html',
+              'manuals/detailed-manual-master-v1.1.html'
+          ]:
+              parser = VisibleText()
+              parser.feed(Path(path).read_text(encoding='utf-8'))
+              text = ' '.join(' '.join(parser.parts).split())
+              combined += ' ' + text
+              hits = [x for x in banned if x in text]
+              report[path] = {'banned_hits': hits, 'chars': len(text)}
+              if hits:
+                  raise SystemExit(f'{path}: public internal terms remain: {hits}')
+
+          missing = [x for x in required if x not in combined]
+          if missing:
+              raise SystemExit(f'required cleaned copy missing: {missing}')
+
+          out = Path('presentation-qa/manuals-copy-clean-v1.3')
+          out.mkdir(parents=True, exist_ok=True)
+          (out / 'PUBLIC_COPY_SOURCE_QA.json').write_text(
+              json.dumps(
+                  {'files': report, 'banned_count': 0, 'required': required, 'result': 'PASS'},
+                  ensure_ascii=False, indent=2
+              ),
+              encoding='utf-8'
+          )
+          print('PUBLIC_COPY_SOURCE_QA_V1.3=PASS')
+          PY
+
+      - name: Install render and QR QA dependencies
+        shell: bash
+        run: |
+          set -eux
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python -m pip install --quiet pillow opencv-python-headless pypdf
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          mkdir -p presentation-qa/manuals-copy-clean-v1.3/quick-pages
+          mkdir -p presentation-qa/manuals-copy-clean-v1.3/detailed-pages
+          mkdir -p /tmp/quick-qr-v13 /tmp/detailed-qr-v13
+
+      - name: Render PDFs and verify logical page overflow
+        shell: bash
+        run: |
+          cat > render-manual-v13.js <<'JS'
+          const { chromium } = require('playwright');
+          const path = require('path');
+          const fs = require('fs');
+
+          async function render(browser, html, pdf, expectedPages) {
+            const page = await browser.newPage({viewport:{width:1200,height:1700}});
+            const errors = [];
+            page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+            page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()) });
+
+            await page.goto('file://' + path.resolve(html), {waitUntil:'load'});
+            await page.waitForTimeout(500);
+
+            const metrics = await page.evaluate(() =>
+              [...document.querySelectorAll('.page')].map((p, i) => ({
+                page:i+1,
+                clientHeight:p.clientHeight,
+                scrollHeight:p.scrollHeight,
+                clientWidth:p.clientWidth,
+                scrollWidth:p.scrollWidth
+              }))
+            );
+
+            if (metrics.length !== expectedPages)
+              throw new Error(`page count ${html}: ${metrics.length} expected ${expectedPages}`);
+
+            for (const m of metrics) {
+              if (m.scrollHeight > m.clientHeight + 1)
+                throw new Error(`vertical overflow ${html} p${m.page}`);
+              if (m.scrollWidth > m.clientWidth + 1)
+                throw new Error(`horizontal overflow ${html} p${m.page}`);
+            }
+            if (errors.length) throw new Error(errors.join(' | '));
+
+            await page.emulateMedia({media:'print'});
+            await page.pdf({
+              path:pdf,
+              format:'A4',
+              printBackground:true,
+              preferCSSPageSize:true,
+              margin:{top:'0',right:'0',bottom:'0',left:'0'}
+            });
+            await page.close();
+            return metrics;
+          }
+
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const quick = await render(
+              browser,
+              'manuals/quick-start-master-v1.1.html',
+              'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf',
+              3
+            );
+            const detailed = await render(
+              browser,
+              'manuals/detailed-manual-master-v1.1.html',
+              'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf',
+              10
+            );
+            fs.writeFileSync(
+              'presentation-qa/manuals-copy-clean-v1.3/PAGE_OVERFLOW_QA.json',
+              JSON.stringify({quick,detailed,result:'PASS'}, null, 2)
+            );
+            await browser.close();
+            console.log('MANUAL_V1.3_PDF_RENDER=PASS');
+          })();
+          JS
+
+          node render-manual-v13.js
+          rm -f render-manual-v13.js
+
+          test "$(pdfinfo DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf | awk '/^Pages:/ {print $2}')" = "3"
+          test "$(pdfinfo DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf | awk '/^Pages:/ {print $2}')" = "10"
+
+          cp DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf
+          cp DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf
+
+      - name: Render every page and decode final PDF QR
+        shell: bash
+        run: |
+          set -eux
+          rm -f presentation-qa/manuals-copy-clean-v1.3/quick-pages/*.png
+          rm -f presentation-qa/manuals-copy-clean-v1.3/detailed-pages/*.png
+          rm -f /tmp/quick-qr-v13/*.png /tmp/detailed-qr-v13/*.png
+
+          pdftoppm -png -r 160 \
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf \
+            presentation-qa/manuals-copy-clean-v1.3/quick-pages/page >/dev/null 2>&1
+          pdftoppm -png -r 160 \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf \
+            presentation-qa/manuals-copy-clean-v1.3/detailed-pages/page >/dev/null 2>&1
+
+          pdftoppm -png -r 300 \
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf \
+            /tmp/quick-qr-v13/page >/dev/null 2>&1
+          pdftoppm -png -r 300 \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf \
+            /tmp/detailed-qr-v13/page >/dev/null 2>&1
+
+          test "$(find presentation-qa/manuals-copy-clean-v1.3/quick-pages -name '*.png' | wc -l)" = "3"
+          test "$(find presentation-qa/manuals-copy-clean-v1.3/detailed-pages -name '*.png' | wc -l)" = "10"
+
+          python - <<'PY'
+          from pathlib import Path
+          import cv2, json
+
+          U = {
+              'guide':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html',
+              'tutorial':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start',
+              'owner':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html',
+              'staff':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html',
+              'customer':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html',
+              'system':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html',
+              'demo':'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html'
+          }
+          qexp = [
+              [U['guide'],U['tutorial']],
+              [U['owner']],
+              [U['system'],U['demo']]
+          ]
+          dexp = [
+              [U['guide']],
+              [U['tutorial']],
+              [U['owner']],
+              [U['owner']],
+              [U['staff']],
+              [U['customer']],
+              [U['owner']],
+              [U['system']],
+              [U['guide']],
+              [U['demo']]
+          ]
+
+          def decode(p):
+              im = cv2.imread(str(p))
+              detector = cv2.QRCodeDetector()
+              vals = []
+              ok, decoded, pts, _ = detector.detectAndDecodeMulti(im)
+              if ok:
+                  vals += [x for x in decoded if x]
+              if not vals:
+                  one, _, _ = detector.detectAndDecode(im)
+                  if one:
+                      vals.append(one)
+              return sorted(set(vals))
+
+          report = {'quick':[], 'detailed':[]}
+          quick_pages = sorted(Path('/tmp/quick-qr-v13').glob('page-*.png'))
+          detailed_pages = sorted(Path('/tmp/detailed-qr-v13').glob('page-*.png'))
+
+          if len(quick_pages) != 3 or len(detailed_pages) != 10:
+              raise SystemExit(f'QR render page count mismatch quick={len(quick_pages)} detailed={len(detailed_pages)}')
+
+          for i, (p, exp) in enumerate(zip(quick_pages, qexp), 1):
+              vals = decode(p)
+              miss = [u for u in exp if u not in vals]
+              if miss:
+                  raise SystemExit(f'quick p{i} missing {miss}, decoded={vals}')
+              report['quick'].append({'page':i,'decoded':vals,'result':'PASS'})
+
+          for i, (p, exp) in enumerate(zip(detailed_pages, dexp), 1):
+              vals = decode(p)
+              miss = [u for u in exp if u not in vals]
+              if miss:
+                  raise SystemExit(f'detailed p{i} missing {miss}, decoded={vals}')
+              report['detailed'].append({'page':i,'decoded':vals,'result':'PASS'})
+
+          report['summary'] = {
+              'quick':'5/5 PASS',
+              'detailed':'10/10 PASS',
+              'result':'PASS'
+          }
+          Path('presentation-qa/manuals-copy-clean-v1.3/FINAL_RENDER_QR_QA.json').write_text(
+              json.dumps(report, ensure_ascii=False, indent=2),
+              encoding='utf-8'
+          )
+          print('FINAL_RENDER_QR_QA_V1.3=PASS')
+          PY
+
+      - name: Final PDF visible-copy guard
+        shell: bash
+        run: |
+          pdftotext DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf /tmp/quick-v13.txt
+          pdftotext DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf /tmp/detailed-v13.txt
+
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          text = (
+              Path('/tmp/quick-v13.txt').read_text(errors='ignore')
+              + '\n'
+              + Path('/tmp/detailed-v13.txt').read_text(errors='ignore')
+          )
+          banned = [
+              'exactly 10','Tutorial state','System identity','Runtime',
+              'Auth boundary','Production Guard','tenant','Owner Auth','顧客Auth',
+              'scope','Binding','versioned','READY工程','契約後READY',
+              'Post-contract settings','field role','safe notification boundary',
+              'Claim Readiness','Impact Preflight',
+              'Current public LIVE screen evidence only','MASTER V1.1','A4 portrait'
+          ]
+          hits = [x for x in banned if x in text]
+          if hits:
+              raise SystemExit(f'final PDF internal terms remain: {hits}')
+
+          Path('presentation-qa/manuals-copy-clean-v1.3/FINAL_PDF_COPY_QA.json').write_text(
+              json.dumps({'banned_hits':[], 'result':'PASS'}, ensure_ascii=False, indent=2),
+              encoding='utf-8'
+          )
+          print('FINAL_PDF_COPY_QA_V1.3=PASS')
+          PY
+
+      - name: Rebuild preview contact sheets
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps
+
+          def sheet(paths, out, cols, width, pad=18):
+              imgs = []
+              for p in paths:
+                  im = Image.open(p).convert('RGB')
+                  ratio = width / im.width
+                  im = im.resize((width, int(im.height * ratio)))
+                  imgs.append(ImageOps.expand(im, border=2, fill='#d8e5e0'))
+
+              rows = (len(imgs) + cols - 1) // cols
+              cw = max(i.width for i in imgs) + pad*2
+              ch = max(i.height for i in imgs) + pad*2
+              canvas = Image.new('RGB', (cw*cols, ch*rows), 'white')
+
+              for n, im in enumerate(imgs):
+                  canvas.paste(im, ((n%cols)*cw + pad, (n//cols)*ch + pad))
+
+              canvas.save(out, optimize=True)
+
+          q = sorted(Path('presentation-qa/manuals-copy-clean-v1.3/quick-pages').glob('page-*.png'))
+          d = sorted(Path('presentation-qa/manuals-copy-clean-v1.3/detailed-pages').glob('page-*.png'))
+
+          sheet(q, 'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_PREVIEW.png', 3, 320)
+          sheet(d, 'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_PREVIEW.png', 5, 230)
+          print('PREVIEW_REBUILD_V1.3=PASS')
+          PY
+
+      - name: Verify Guide links and frozen scope byte-identical
+        shell: bash
+        run: |
+          set -eux
+          grep -F 'href="DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf"' guide.html
+          grep -F 'href="DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf"' guide.html
+
+          sha256sum \
+            guide.html tutorial.html \
+            lp.html flyer-visit-ahaki.html DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html demo.html system-check.html styles.css \
+            | diff - /tmp/frozen-before.sha256
+
+          echo MANUAL_V1.3_FROZEN_SCOPE=PASS
+
+      - name: Final QA summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from pypdf import PdfReader
+          import json, hashlib
+
+          q = 'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf'
+          d = 'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf'
+
+          summary = {
+              'master':'CENTRAL PRESENTATION / TUTORIAL MASTER V1.2',
+              'manual_public_copy_patch':'V1.3 DIRECT',
+              'quick_start':{
+                  'pages':len(PdfReader(q).pages),
+                  'public_copy_clean':True,
+                  'final_render_qr':'5/5 PASS',
+                  'preview_png':True,
+                  'result':'GREEN'
+              },
+              'detailed_manual':{
+                  'pages':len(PdfReader(d).pages),
+                  'public_copy_clean':True,
+                  'final_render_qr':'10/10 PASS',
+                  'preview_png':True,
+                  'result':'GREEN'
+              },
+              'public_internal_terms':0,
+              'guide_links':'UNCHANGED_AND_CONNECTED',
+              'frozen_scope':'PASS',
+              'presentation_gate':'READY_FOR_PUBLIC_FINAL_QA',
+              'complete_final_lock':'HOLD_UNTIL_PUBLIC_FINAL_QA',
+              'sha256':{
+                  q:hashlib.sha256(Path(q).read_bytes()).hexdigest(),
+                  d:hashlib.sha256(Path(d).read_bytes()).hexdigest()
+              }
+          }
+
+          Path('presentation-qa/manuals-copy-clean-v1.3/MANUAL_COPY_CLEAN_MASTER_QA_V1.3.json').write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2),
+              encoding='utf-8'
+          )
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Commit V1.3 manual artifacts only
+        shell: bash
+        run: |
+          set -eux
+          rm -rf node_modules package.json package-lock.json
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add \
+            manuals/quick-start-master-v1.1.html \
+            manuals/detailed-manual-master-v1.1.html \
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf \
+            DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf \
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_PREVIEW.png \
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_PREVIEW.png \
+            presentation-qa/manuals-copy-clean-v1.3
+
+          git diff --cached --name-only | tee /tmp/staged.txt
+
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = set(Path('/tmp/staged.txt').read_text().splitlines())
+          fixed = {
+              'manuals/quick-start-master-v1.1.html',
+              'manuals/detailed-manual-master-v1.1.html',
+              'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf',
+              'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf',
+              'DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf',
+              'DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf',
+              'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_PREVIEW.png',
+              'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_PREVIEW.png'
+          }
+
+          for p in paths:
+              if p in fixed:
+                  continue
+              if p.startswith('presentation-qa/manuals-copy-clean-v1.3/'):
+                  continue
+              raise SystemExit(f'Unexpected staged path: {p}')
+          PY
+
+          git commit -m "Finalize VISIT AHAKI Manual public copy V1.3"
+          git push
