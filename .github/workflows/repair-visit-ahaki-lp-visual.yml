@@ -1,4 +1,4 @@
-name: Repair VISIT AHAKI LP Master Typography V1.1
+name: Repair VISIT AHAKI LP Master Typography V1.2
 
 on:
   push:
@@ -38,15 +38,16 @@ jobs:
 
           p=Path('lp.html')
           s=p.read_text(encoding='utf-8')
+          nl=chr(10)
 
           old_h1='h1{font-size:clamp(44px,6.5vw,78px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}'
-          new_h1='h1{font-size:clamp(42px,4.2vw,60px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}\\n    .hero-line{display:block;white-space:nowrap}'
+          new_h1='h1{font-size:clamp(42px,4.2vw,60px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}'+nl+'    .hero-line{display:block;white-space:nowrap}'
 
           old_price='.pricebox .big{font-size:clamp(38px,6vw,66px);font-weight:950;color:#70e9bb;letter-spacing:-.05em}'
-          new_price='.pricebox .big{font-size:clamp(36px,4.4vw,54px);font-weight:950;color:#70e9bb;letter-spacing:-.05em;display:flex;align-items:baseline;gap:.22em;white-space:nowrap}\\n    .price-main,.price-tax{white-space:nowrap}.price-tax{font-size:.42em;letter-spacing:0}'
+          new_price='.pricebox .big{font-size:clamp(36px,4.4vw,54px);font-weight:950;color:#70e9bb;letter-spacing:-.05em;display:flex;align-items:baseline;gap:.22em;white-space:nowrap}'+nl+'    .price-main,.price-tax{white-space:nowrap}.price-tax{font-size:.42em;letter-spacing:0}'
 
           old_mobile='      .btn{width:100%}'
-          new_mobile='      h1{font-size:32px}\\n      .pricebox .big{font-size:34px}\\n      .btn{width:100%}'
+          new_mobile='      h1{font-size:32px}'+nl+'      .pricebox .big{font-size:34px}'+nl+'      .btn{width:100%}'
 
           old_head='<h1>「今日、誰が、どこへ行くか」から、<br>記録・家族連絡まで。</h1>'
           new_head='<h1><span class="hero-line">今日の訪問を、</span><span class="hero-line">「誰が・どこへ」から、</span><span class="hero-line">記録・家族連絡まで。</span></h1>'
@@ -77,24 +78,16 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0
           npx playwright install --with-deps chromium
-          mkdir -p presentation-qa/lp-visual-v1.1
+          mkdir -p presentation-qa/lp-visual-v1.2
 
       - name: Render and enforce visual line contracts
         shell: bash
         run: |
-          cat > /tmp/qa-lp-visual.js <<'JS'
+          cat > qa-lp-visual.js <<'JS'
           const { chromium } = require('playwright');
           const fs=require('fs');
           const path=require('path');
           const widths=[375,390,430,768,1280,1440];
-
-          function rangeMetrics(el){
-            const r=document.createRange();
-            r.selectNodeContents(el);
-            const rects=[...r.getClientRects()].map(x=>({x:x.x,y:x.y,width:x.width,height:x.height}));
-            const box=el.getBoundingClientRect();
-            return {text:el.textContent,rects,box:{x:box.x,y:box.y,width:box.width,height:box.height}};
-          }
 
           (async()=>{
             const browser=await chromium.launch({headless:true});
@@ -109,7 +102,7 @@ jobs:
               await page.goto(file,{waitUntil:'load'});
               await page.waitForTimeout(400);
 
-              const q=await page.evaluate(({rangeMetricsText})=>{
+              const q=await page.evaluate(()=>{
                 function measure(el){
                   const r=document.createRange(); r.selectNodeContents(el);
                   const rects=[...r.getClientRects()].map(x=>({x:x.x,y:x.y,width:x.width,height:x.height}));
@@ -121,7 +114,6 @@ jobs:
                 const big=document.querySelector('#p8 .big');
                 const priceMain=measure(document.querySelector('#p8 .price-main'));
                 const priceTax=measure(document.querySelector('#p8 .price-tax'));
-                const bigBox=big.getBoundingClientRect();
                 const sections=[...document.querySelectorAll('main>section')].map(x=>x.id);
                 const buttons=[...document.querySelectorAll('a.btn,.nav .cta')];
                 return {
@@ -131,10 +123,10 @@ jobs:
                   hero,
                   priceMain,
                   priceTax,
-                  priceBox:{width:bigBox.width,scrollWidth:big.scrollWidth,clientWidth:big.clientWidth},
+                  priceBox:{scrollWidth:big.scrollWidth,clientWidth:big.clientWidth},
                   minControlHeight:Math.min(...buttons.map(x=>x.getBoundingClientRect().height))
                 };
-              },{rangeMetricsText:''});
+              });
 
               const expected=['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10'];
               if(JSON.stringify(q.sections)!==JSON.stringify(expected)) throw new Error('section order '+width);
@@ -149,13 +141,13 @@ jobs:
               if(q.minControlHeight<44) throw new Error('control <44 '+width);
               if(errors.length) throw new Error('console '+width+': '+errors.join(' | '));
 
-              await page.screenshot({path:`presentation-qa/lp-visual-v1.1/lp-${width}.png`,fullPage:true});
+              await page.screenshot({path:`presentation-qa/lp-visual-v1.2/lp-${width}.png`,fullPage:true});
               results.push({width,...q,errors,result:'PASS'});
               await page.close();
             }
 
             fs.writeFileSync(
-              'presentation-qa/LP_VISUAL_REPAIR_QA_V1.1.json',
+              'presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json',
               JSON.stringify({
                 master:'DPRO-LP-MASTER-V1.4',
                 repair:'controlled hero line breaks + non-orphan monthly price typography',
@@ -169,7 +161,8 @@ jobs:
             console.log('LP_VISUAL_REPAIR_QA=GREEN');
           })();
           JS
-          node /tmp/qa-lp-visual.js
+          node qa-lp-visual.js
+          rm -f qa-lp-visual.js
 
       - name: Verify frozen scope byte-identical
         shell: bash
@@ -190,14 +183,14 @@ jobs:
           git rm .github/workflows/repair-visit-ahaki-lp-visual.yml
           git config user.name "DPRO SYSTEM FACTORY"
           git config user.email "actions@users.noreply.github.com"
-          git add lp.html presentation-qa/LP_VISUAL_REPAIR_QA_V1.1.json presentation-qa/lp-visual-v1.1
+          git add lp.html presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json presentation-qa/lp-visual-v1.2
           git diff --cached --name-only | tee /tmp/staged.txt
           python - <<'PY'
           from pathlib import Path
           paths=set(Path('/tmp/staged.txt').read_text().splitlines())
-          allowed={'.github/workflows/repair-visit-ahaki-lp-visual.yml','lp.html','presentation-qa/LP_VISUAL_REPAIR_QA_V1.1.json'}
+          allowed={'.github/workflows/repair-visit-ahaki-lp-visual.yml','lp.html','presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json'}
           for p in paths:
-              if p.startswith('presentation-qa/lp-visual-v1.1/'): continue
+              if p.startswith('presentation-qa/lp-visual-v1.2/'): continue
               if p not in allowed: raise SystemExit(f'Unexpected staged path: {p}')
           PY
           git commit -m "Fix VISIT AHAKI LP master typography"
