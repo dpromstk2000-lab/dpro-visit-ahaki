@@ -1,0 +1,197 @@
+name: Repair VISIT AHAKI LP Master Typography V1.2
+
+on:
+  push:
+    paths:
+      - ".github/workflows/repair-visit-ahaki-lp-visual.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Freeze non-LP presentation and SYSTEM scope
+        shell: bash
+        run: |
+          set -eux
+          test "$(sha256sum lp.html | awk '{print $1}')" = "148e0aec6cb6de948dca64fcd09d32b479ffe223900c0bb38eb9d7a15d3b4cba"
+          test "$(sha256sum flyer-visit-ahaki.html | awk '{print $1}')" = "4b3375973ddc87b07610d98478bb202ccb0c09bc2352b5f836bc92f9377c1865"
+          test "$(sha256sum DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf | awk '{print $1}')" = "e15295bf9b7709463f34f18eb79892fa24c019c3ed7e7e1dee7687462d4b0091"
+          sha256sum \
+            flyer-visit-ahaki.html \
+            DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html guide.html demo.html system-check.html \
+            > /tmp/frozen-before.sha256
+
+      - name: Apply LP typography-only repair
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('lp.html')
+          s=p.read_text(encoding='utf-8')
+          nl=chr(10)
+
+          old_h1='h1{font-size:clamp(44px,6.5vw,78px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}'
+          new_h1='h1{font-size:clamp(42px,4.2vw,60px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}'+nl+'    .hero-line{display:block;white-space:nowrap}'
+
+          old_price='.pricebox .big{font-size:clamp(38px,6vw,66px);font-weight:950;color:#70e9bb;letter-spacing:-.05em}'
+          new_price='.pricebox .big{font-size:clamp(36px,4.4vw,54px);font-weight:950;color:#70e9bb;letter-spacing:-.05em;display:flex;align-items:baseline;gap:.22em;white-space:nowrap}'+nl+'    .price-main,.price-tax{white-space:nowrap}.price-tax{font-size:.42em;letter-spacing:0}'
+
+          old_mobile='      .btn{width:100%}'
+          new_mobile='      h1{font-size:32px}'+nl+'      .pricebox .big{font-size:34px}'+nl+'      .btn{width:100%}'
+
+          old_head='<h1>「今日、誰が、どこへ行くか」から、<br>記録・家族連絡まで。</h1>'
+          new_head='<h1><span class="hero-line">今日の訪問を、</span><span class="hero-line">「誰が・どこへ」から、</span><span class="hero-line">記録・家族連絡まで。</span></h1>'
+
+          old_price_html='<div class="big">月額 5,500円（税込）</div>'
+          new_price_html='<div class="big"><span class="price-main">月額 5,500円</span><span class="price-tax">（税込）</span></div>'
+
+          pairs=[
+            (old_h1,new_h1,'h1 CSS'),
+            (old_price,new_price,'price CSS'),
+            (old_mobile,new_mobile,'mobile CSS'),
+            (old_head,new_head,'hero copy'),
+            (old_price_html,new_price_html,'price markup'),
+          ]
+          for old,new,label in pairs:
+              if s.count(old)!=1:
+                  raise SystemExit(f'{label}: expected exactly one source match, got {s.count(old)}')
+              s=s.replace(old,new)
+
+          p.write_text(s,encoding='utf-8')
+          print('LP_TYPOGRAPHY_PATCH=APPLIED')
+          PY
+
+      - name: Install Playwright
+        shell: bash
+        run: |
+          set -eux
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+          mkdir -p presentation-qa/lp-visual-v1.2
+
+      - name: Render and enforce visual line contracts
+        shell: bash
+        run: |
+          cat > qa-lp-visual.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs=require('fs');
+          const path=require('path');
+          const widths=[375,390,430,768,1280,1440];
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const results=[];
+            const file='file://'+path.resolve('lp.html');
+
+            for(const width of widths){
+              const page=await browser.newPage({viewport:{width,height:1000}});
+              const errors=[];
+              page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+              page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+              await page.goto(file,{waitUntil:'load'});
+              await page.waitForTimeout(400);
+
+              const q=await page.evaluate(()=>{
+                function measure(el){
+                  const r=document.createRange(); r.selectNodeContents(el);
+                  const rects=[...r.getClientRects()].map(x=>({x:x.x,y:x.y,width:x.width,height:x.height}));
+                  const box=el.getBoundingClientRect();
+                  return {text:el.textContent,rects,box:{x:box.x,y:box.y,width:box.width,height:box.height}};
+                }
+                const de=document.documentElement;
+                const hero=[...document.querySelectorAll('#p1 .hero-line')].map(measure);
+                const big=document.querySelector('#p8 .big');
+                const priceMain=measure(document.querySelector('#p8 .price-main'));
+                const priceTax=measure(document.querySelector('#p8 .price-tax'));
+                const sections=[...document.querySelectorAll('main>section')].map(x=>x.id);
+                const buttons=[...document.querySelectorAll('a.btn,.nav .cta')];
+                return {
+                  sections,
+                  scrollWidth:de.scrollWidth,
+                  clientWidth:de.clientWidth,
+                  hero,
+                  priceMain,
+                  priceTax,
+                  priceBox:{scrollWidth:big.scrollWidth,clientWidth:big.clientWidth},
+                  minControlHeight:Math.min(...buttons.map(x=>x.getBoundingClientRect().height))
+                };
+              });
+
+              const expected=['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10'];
+              if(JSON.stringify(q.sections)!==JSON.stringify(expected)) throw new Error('section order '+width);
+              if(q.scrollWidth>q.clientWidth+1) throw new Error('horizontal overflow '+width);
+              if(q.hero.length!==3) throw new Error('hero line count '+width);
+              for(const line of q.hero){
+                if(line.rects.length!==1) throw new Error(`hero wrap ${width}: ${line.text}`);
+                if(line.rects[0].width>line.box.width+1) throw new Error(`hero line overflow ${width}: ${line.text}`);
+              }
+              if(q.priceMain.rects.length!==1 || q.priceTax.rects.length!==1) throw new Error('price wrap '+width);
+              if(q.priceBox.scrollWidth>q.priceBox.clientWidth+1) throw new Error('price overflow '+width);
+              if(q.minControlHeight<44) throw new Error('control <44 '+width);
+              if(errors.length) throw new Error('console '+width+': '+errors.join(' | '));
+
+              await page.screenshot({path:`presentation-qa/lp-visual-v1.2/lp-${width}.png`,fullPage:true});
+              results.push({width,...q,errors,result:'PASS'});
+              await page.close();
+            }
+
+            fs.writeFileSync(
+              'presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json',
+              JSON.stringify({
+                master:'DPRO-LP-MASTER-V1.4',
+                repair:'controlled hero line breaks + non-orphan monthly price typography',
+                widths,
+                checks:'P1-P10 / overflow0 / hero exactly 3 unwrapped lines / price unwrapped / controls >=44 / console0',
+                results,
+                result:'GREEN'
+              },null,2)
+            );
+            await browser.close();
+            console.log('LP_VISUAL_REPAIR_QA=GREEN');
+          })();
+          JS
+          node qa-lp-visual.js
+          rm -f qa-lp-visual.js
+
+      - name: Verify frozen scope byte-identical
+        shell: bash
+        run: |
+          set -eux
+          sha256sum \
+            flyer-visit-ahaki.html \
+            DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            app.js config.js owner.html staff.html customer.html guide.html demo.html system-check.html \
+            | diff - /tmp/frozen-before.sha256
+          echo FROZEN_SCOPE_BYTE_IDENTITY=PASS
+
+      - name: Commit LP visual repair only
+        shell: bash
+        run: |
+          set -eux
+          rm -rf node_modules package.json package-lock.json
+          git rm .github/workflows/repair-visit-ahaki-lp-visual.yml
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+          git add lp.html presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json presentation-qa/lp-visual-v1.2
+          git diff --cached --name-only | tee /tmp/staged.txt
+          python - <<'PY'
+          from pathlib import Path
+          paths=set(Path('/tmp/staged.txt').read_text().splitlines())
+          allowed={'.github/workflows/repair-visit-ahaki-lp-visual.yml','lp.html','presentation-qa/LP_VISUAL_REPAIR_QA_V1.2.json'}
+          for p in paths:
+              if p.startswith('presentation-qa/lp-visual-v1.2/'): continue
+              if p not in allowed: raise SystemExit(f'Unexpected staged path: {p}')
+          PY
+          git commit -m "Fix VISIT AHAKI LP master typography"
+          git push
