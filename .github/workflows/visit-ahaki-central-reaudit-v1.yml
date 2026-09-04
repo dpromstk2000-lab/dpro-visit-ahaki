@@ -1,0 +1,419 @@
+name: VISIT AHAKI CENTRAL Re-Audit V1.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/visit-ahaki-central-reaudit-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reaudit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      BASE_URL: https://dpromstk2000-lab.github.io/dpro-visit-ahaki
+      EVIDENCE_DIR: presentation-qa/central-reaudit-v1.0
+
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Freeze Core and verify required presentation assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE_DIR"
+          test -f lp.html
+          test -f flyer-visit-ahaki.html
+          test -f tutorial.html
+          test -f guide.html
+          test -f DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf
+          test -f DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf
+          test -f DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf
+          test -f manuals/quick-start-master-v1.1.html
+          test -f manuals/detailed-manual-master-v1.1.html
+          test -f presentation/visit-ahaki-industry-acupuncture.jpg
+          test -f presentation/visit-ahaki-industry-massage-senior.jpg
+          test -f presentation/live-owner-desktop.png
+          test -f presentation/live-staff-mobile.png
+          test -f presentation/live-family-mobile.png
+          test -f presentation/live-system-check.png
+          sha256sum app.js config.js owner.html staff.html customer.html demo.html system-check.html styles.css > "$EVIDENCE_DIR/core-frozen.sha256"
+
+      - name: Install browser and PDF QA dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils zbar-tools
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Build and syntax-check fresh static QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/static_qa.py <<'PY'
+          from pathlib import Path
+          import json, re, subprocess
+
+          root = Path('.')
+          out = root / 'presentation-qa/central-reaudit-v1.0'
+          out.mkdir(parents=True, exist_ok=True)
+
+          def text(path):
+              return (root / path).read_text(encoding='utf-8')
+
+          checks = {}
+          lp = text('lp.html')
+          tutorial = text('tutorial.html')
+          guide = text('guide.html')
+          quick_html = text('manuals/quick-start-master-v1.1.html')
+          detailed_html = text('manuals/detailed-manual-master-v1.1.html')
+
+          ids = re.findall(r'<section[^>]+id="(p\\d+)"', lp)
+          expected_ids = [f'p{i}' for i in range(1, 11)]
+          checks['lp_section_order'] = {'actual': ids, 'expected': expected_ids, 'pass': ids == expected_ids}
+          checks['lp_p1_photo'] = {'pass': 'presentation/visit-ahaki-industry-acupuncture.jpg' in lp}
+          checks['lp_p10_photo'] = {'pass': 'presentation/visit-ahaki-industry-massage-senior.jpg' in lp}
+          checks['lp_p4_html_diagram'] = {'pass': 'diagram-grid' in lp and '<div class="diagram' in lp}
+          checks['lp_p9_current_screens'] = {'pass': all(x in lp for x in [
+              'presentation/live-owner-desktop.png',
+              'presentation/live-staff-mobile.png',
+              'presentation/live-family-mobile.png'
+          ])}
+          checks['lp_price'] = {'pass': '5,500' in lp and '税込' in lp}
+          checks['lp_owner_send_safety'] = {'pass': ('健康情報' in lp and 'LINE' in lp and ('送信' in lp or '連絡' in lp))}
+
+          m = re.search(r'const STEPS = \\[(.*?)\\n\\s*\\];', tutorial, re.S)
+          step_count = len(re.findall(r'\\{title:', m.group(1))) if m else 0
+          checks['tutorial_exact_10'] = {'count': step_count, 'pass': step_count == 10}
+          checks['tutorial_modes'] = {'pass': all(x in tutorial for x in ["mode === 'start'", "mode === 'replay'", "read() || fresh()"])}
+          checks['tutorial_close_esc'] = {'pass': all(x in tutorial for x in ['closeTutorial', "e.key === 'Escape'", 'id="close"'])}
+          checks['tutorial_no_state_mutation_copy'] = {'pass': '保存・送信・承認・Demo Resetを実行しません' in tutorial}
+          checks['tutorial_touch_keyboard_css'] = {'pass': ('focus-visible' in tutorial and 'min-height:48px' in tutorial)}
+
+          guide_first10_count = guide.count('class="first10-item"')
+          checks['guide_exact_10'] = {'count': guide_first10_count, 'pass': guide_first10_count == 10}
+          checks['guide_start_resume_replay'] = {'pass': all(x in guide for x in [
+              'tutorial.html?mode=start', 'tutorial.html?mode=resume', 'tutorial.html?mode=replay'
+          ])}
+          checks['guide_accessibility_copy'] = {'pass': all(x in guide for x in ['Tab', 'Enter / Space', 'Esc', 'マウス・タッチ'])}
+
+          checks['quick_pdf_current_links'] = {'pass': all(x in quick_html for x in ['guide.html', 'tutorial.html'])}
+          checks['detailed_pdf_current_links'] = {'pass': all(x in detailed_html for x in ['guide.html', 'tutorial.html'])}
+          checks['manual_current_screens'] = {'pass': all(x in (quick_html + detailed_html) for x in [
+              'presentation/live-owner-desktop.png',
+              'presentation/live-staff-mobile.png',
+              'presentation/live-family-mobile.png'
+          ])}
+
+          failed = [k for k, v in checks.items() if not v.get('pass')]
+          report = {'commit': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'checks': checks, 'failed': failed}
+          (out / 'STATIC_REAUDIT.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+          if failed:
+              raise SystemExit('Static re-audit failed: ' + ', '.join(failed))
+          print('STATIC_REAUDIT=PASS')
+          PY
+          python -m py_compile /tmp/static_qa.py
+          python /tmp/static_qa.py
+
+      - name: Build and syntax-check public browser QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/browser_qa.js <<'JS'
+          const fs = require('fs');
+          const { chromium } = require('playwright');
+
+          const base = process.env.BASE_URL;
+          const out = process.env.EVIDENCE_DIR;
+          const sha = process.env.GITHUB_SHA;
+          fs.mkdirSync(out, { recursive: true });
+
+          const widths = [375, 390, 430, 768, 1280, 1440];
+          const report = { commit: sha, widths: [], tutorial: {}, publicHashes: {}, errors: [] };
+          const badMethods = [];
+
+          function assert(cond, msg) {
+            if (!cond) throw new Error(msg);
+          }
+
+          async function gotoFresh(page, path) {
+            const join = path.includes('?') ? '&' : '?';
+            const url = `${base}/${path}${join}reaudit=${sha}-${Date.now()}`;
+            const resp = await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
+            assert(resp && resp.ok(), `HTTP failure ${url}: ${resp && resp.status()}`);
+            return url;
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            try {
+              for (const width of widths) {
+                const context = await browser.newContext({ viewport: { width, height: width <= 430 ? 900 : 1000 } });
+                const page = await context.newPage();
+                const runtimeErrors = [];
+                page.on('console', msg => { if (msg.type() === 'error') runtimeErrors.push(`console:${msg.text()}`); });
+                page.on('pageerror', err => runtimeErrors.push(`page:${err.message}`));
+                await gotoFresh(page, 'lp.html');
+                const layout = await page.evaluate(() => {
+                  const de = document.documentElement;
+                  const sections = [...document.querySelectorAll('main section[id]')].map(x => x.id);
+                  const visible = el => {
+                    const s = getComputedStyle(el); const r = el.getBoundingClientRect();
+                    return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+                  };
+                  const overflowEls = [...document.querySelectorAll('h1,h2,h3,.kicker,.btn')].filter(visible).filter(el => {
+                    const r = el.getBoundingClientRect();
+                    return r.left < -1 || r.right > de.clientWidth + 1;
+                  }).map(el => ({ tag: el.tagName, text: (el.textContent || '').trim().slice(0,100), left: el.getBoundingClientRect().left, right: el.getBoundingClientRect().right }));
+                  const p1Ctas = [...document.querySelectorAll('#p1 .btn')].filter(visible).map(el => ({ text: el.textContent.trim(), h: el.getBoundingClientRect().height }));
+                  const price = document.querySelector('#p8 .pricebox') || document.querySelector('.pricebox');
+                  const photos = ['#p1 img', '#p10 img'].map(sel => { const el = document.querySelector(sel); return { sel, exists: !!el, nw: el?.naturalWidth || 0, nh: el?.naturalHeight || 0 }; });
+                  const p4 = document.querySelector('#p4 .diagram-grid');
+                  const p9imgs = [...document.querySelectorAll('#p9 img')].map(x => ({ src: x.getAttribute('src'), nw: x.naturalWidth, nh: x.naturalHeight }));
+                  return {
+                    scrollWidth: de.scrollWidth, clientWidth: de.clientWidth,
+                    sections, overflowEls, p1Ctas,
+                    priceText: price ? price.textContent.replace(/\\s+/g,' ').trim() : '',
+                    priceRect: price ? price.getBoundingClientRect().toJSON() : null,
+                    photos, p4Exists: !!p4, p4Text: p4 ? p4.textContent.replace(/\\s+/g,' ').trim().slice(0,500) : '',
+                    p9imgs
+                  };
+                });
+                assert(layout.scrollWidth === layout.clientWidth, `Horizontal overflow at ${width}: ${layout.scrollWidth} != ${layout.clientWidth}`);
+                assert(JSON.stringify(layout.sections) === JSON.stringify(['p1','p2','p3','p4','p5','p6','p7','p8','p9','p10']), `P1-P10 order mismatch at ${width}`);
+                assert(layout.overflowEls.length === 0, `Heading/CTA overflow at ${width}: ${JSON.stringify(layout.overflowEls)}`);
+                assert(layout.p1Ctas.length >= 3 && layout.p1Ctas.every(x => x.h >= 44), `P1 CTA visibility/touch target failure at ${width}`);
+                assert(layout.priceText.includes('5,500') && layout.priceText.includes('税込'), `Price content failure at ${width}`);
+                assert(layout.photos.every(x => x.exists && x.nw > 0 && x.nh > 0), `P1/P10 photo failure at ${width}`);
+                assert(layout.p4Exists && layout.p4Text.length > 20, `P4 HTML diagram failure at ${width}`);
+                assert(layout.p9imgs.length >= 3 && layout.p9imgs.every(x => x.nw > 0 && x.nh > 0), `P9 live screenshot failure at ${width}`);
+                assert(runtimeErrors.length === 0, `Browser runtime errors at ${width}: ${runtimeErrors.join(' | ')}`);
+                await page.screenshot({ path: `${out}/lp-${width}.png`, fullPage: true });
+                report.widths.push({ width, ...layout, runtimeErrors });
+                await context.close();
+              }
+
+              for (const width of [390, 1440]) {
+                const context = await browser.newContext({ viewport: { width, height: width === 390 ? 900 : 1000 }, hasTouch: width === 390, isMobile: width === 390 });
+                const page = await context.newPage();
+                page.on('request', req => { if (!['GET','HEAD'].includes(req.method())) badMethods.push({ method: req.method(), url: req.url() }); });
+                await gotoFresh(page, 'guide.html');
+                const guideData = await page.evaluate(() => ({
+                  first10: document.querySelectorAll('.first10-item').length,
+                  start: document.querySelector('#startFirst10')?.getAttribute('href'),
+                  resume: document.querySelector('#resumeFirst10')?.getAttribute('href'),
+                  replay: document.querySelector('#replayFirst10')?.getAttribute('href')
+                }));
+                assert(guideData.first10 === 10, `Guide First10 count != 10 at ${width}`);
+                assert(guideData.start === 'tutorial.html?mode=start' && guideData.resume === 'tutorial.html?mode=resume' && guideData.replay === 'tutorial.html?mode=replay', `Guide tutorial contract broken at ${width}`);
+                await page.screenshot({ path: `${out}/guide-${width}.png`, fullPage: true });
+
+                await page.evaluate(() => localStorage.clear());
+                await page.reload({ waitUntil: 'networkidle' });
+                await Promise.all([page.waitForURL(/tutorial\.html\?mode=start/), page.click('#startFirst10')]);
+                assert((await page.locator('#progressText').textContent()).includes('Step 1 / 10'), `Start did not open Step 1 at ${width}`);
+                await page.screenshot({ path: `${out}/tutorial-start-${width}.png`, fullPage: true });
+
+                if (width === 390) {
+                  await page.tap('#next');
+                } else {
+                  await page.locator('#next').focus();
+                  await page.keyboard.press('Enter');
+                }
+                let state = await page.evaluate(() => JSON.parse(localStorage.getItem('dpro_visit_ahaki_first10_v11')));
+                assert(state && state.current === 1, `Mouse/touch/keyboard Next did not persist Step 2 at ${width}`);
+
+                await page.keyboard.press('Escape');
+                await page.waitForURL(/guide\.html/);
+                assert((await page.locator('#first10Status').textContent()).includes('Step 2 / 10'), `Esc did not return with resumable progress at ${width}`);
+
+                await Promise.all([page.waitForURL(/tutorial\.html\?mode=resume/), page.click('#resumeFirst10')]);
+                assert((await page.locator('#progressText').textContent()).includes('Step 2 / 10'), `Resume did not resume Step 2 at ${width}`);
+                await page.click('#close');
+                await page.waitForURL(/guide\.html/);
+
+                await Promise.all([page.waitForURL(/tutorial\.html\?mode=replay/), page.click('#replayFirst10')]);
+                assert((await page.locator('#progressText').textContent()).includes('Step 1 / 10'), `Replay did not reset Step 1 at ${width}`);
+                state = await page.evaluate(() => JSON.parse(localStorage.getItem('dpro_visit_ahaki_first10_v11')));
+                assert(state && state.current === 0 && state.completed === false, `Replay state reset failed at ${width}`);
+
+                report.tutorial[String(width)] = { guideData, runtime: 'PASS' };
+                await context.close();
+              }
+
+              assert(badMethods.length === 0, `Tutorial/Guide caused mutating network calls: ${JSON.stringify(badMethods)}`);
+              report.tutorial.badMethods = badMethods;
+              fs.writeFileSync(`${out}/BROWSER_REAUDIT.json`, JSON.stringify(report, null, 2));
+              console.log('BROWSER_REAUDIT=PASS');
+            } finally {
+              await browser.close();
+            }
+          })().catch(err => { console.error(err); process.exit(1); });
+          JS
+          node --check /tmp/browser_qa.js
+          node /tmp/browser_qa.js
+
+      - name: Build and syntax-check PDF, QR, and manual re-audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/pdf_qa.sh <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          OUT="$EVIDENCE_DIR"
+          mkdir -p "$OUT/a4-images" "$OUT/quick-images" "$OUT/detailed-images" "$OUT/pdf-extracted"
+
+          curl -fsSL --retry 5 --retry-delay 3 "$BASE_URL/DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf?reaudit=$GITHUB_SHA" -o /tmp/public-a4.pdf
+          curl -fsSL --retry 5 --retry-delay 3 "$BASE_URL/DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf?reaudit=$GITHUB_SHA" -o /tmp/public-quick.pdf
+          curl -fsSL --retry 5 --retry-delay 3 "$BASE_URL/DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf?reaudit=$GITHUB_SHA" -o /tmp/public-detailed.pdf
+
+          cmp DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf /tmp/public-a4.pdf
+          cmp DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf /tmp/public-quick.pdf
+          cmp DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf /tmp/public-detailed.pdf
+
+          A4_PAGES="$(pdfinfo /tmp/public-a4.pdf | awk '/^Pages:/ {print $2}')"
+          QUICK_PAGES="$(pdfinfo /tmp/public-quick.pdf | awk '/^Pages:/ {print $2}')"
+          DETAILED_PAGES="$(pdfinfo /tmp/public-detailed.pdf | awk '/^Pages:/ {print $2}')"
+          test "$A4_PAGES" = "1"
+          test "$QUICK_PAGES" -ge 1
+          test "$DETAILED_PAGES" -gt "$QUICK_PAGES"
+          pdfinfo /tmp/public-a4.pdf | grep -Eq 'Page size: +595(\.2[0-9]*)? x 841(\.8[0-9]*)? pts|Page size: +595\.276 x 841\.89 pts'
+
+          pdftoppm -png -r 220 /tmp/public-a4.pdf "$OUT/a4-images/page" >/dev/null 2>&1
+          pdftoppm -png -r 150 /tmp/public-quick.pdf "$OUT/quick-images/page" >/dev/null 2>&1
+          pdftoppm -png -r 120 /tmp/public-detailed.pdf "$OUT/detailed-images/page" >/dev/null 2>&1
+
+          pdfimages -png /tmp/public-a4.pdf "$OUT/pdf-extracted/img" >/dev/null 2>&1 || true
+          : > /tmp/decoded.txt
+          zbarimg --quiet --raw "$OUT"/a4-images/*.png >> /tmp/decoded.txt 2>/dev/null || true
+          for f in "$OUT"/pdf-extracted/*.png; do
+            [ -e "$f" ] || continue
+            zbarimg --quiet --raw "$f" >> /tmp/decoded.txt 2>/dev/null || true
+          done
+          sort -u /tmp/decoded.txt > "$OUT/A4_QR_DECODED.txt"
+          grep -Fxq 'https://dpro-shop.com/' "$OUT/A4_QR_DECODED.txt"
+          grep -Fxq 'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html' "$OUT/A4_QR_DECODED.txt"
+          grep -Fxq 'https://lin.ee/YxJGXV6D' "$OUT/A4_QR_DECODED.txt"
+          test "$(grep -c '^https://' "$OUT/A4_QR_DECODED.txt")" -ge 3
+
+          pdftotext /tmp/public-quick.pdf "$OUT/quick.txt"
+          pdftotext /tmp/public-detailed.pdf "$OUT/detailed.txt"
+          grep -q 'First10' "$OUT/quick.txt"
+          grep -q 'Guide Center' "$OUT/quick.txt"
+          grep -q 'First10' "$OUT/detailed.txt"
+          grep -q 'System Check' "$OUT/detailed.txt"
+
+          cat > "$OUT/PDF_REAUDIT.json" <<JSON
+          {
+            "commit": "$GITHUB_SHA",
+            "a4": {"pages": $A4_PAGES, "a4_portrait": true, "public_equals_repo": true, "qr_three_expected": true},
+            "quick_start": {"pages": $QUICK_PAGES, "public_equals_repo": true},
+            "detailed_manual": {"pages": $DETAILED_PAGES, "public_equals_repo": true},
+            "result": "PASS"
+          }
+          JSON
+          echo 'PDF_REAUDIT=PASS'
+          SH
+          bash -n /tmp/pdf_qa.sh
+          bash /tmp/pdf_qa.sh
+
+      - name: Check manual HTML page geometry and capture fresh page screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/manual_browser_qa.js <<'JS'
+          const fs = require('fs');
+          const { chromium } = require('playwright');
+          const base = process.env.BASE_URL;
+          const out = process.env.EVIDENCE_DIR;
+          const sha = process.env.GITHUB_SHA;
+          function assert(c,m){ if(!c) throw new Error(m); }
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const report = {};
+            try {
+              for (const item of [
+                ['quick','manuals/quick-start-master-v1.1.html'],
+                ['detailed','manuals/detailed-manual-master-v1.1.html']
+              ]) {
+                const [name,path] = item;
+                const context = await browser.newContext({viewport:{width:1440,height:1000}});
+                const page = await context.newPage();
+                const errors=[];
+                page.on('console',m=>{if(m.type()==='error') errors.push(m.text())});
+                page.on('pageerror',e=>errors.push(e.message));
+                const resp = await page.goto(`${base}/${path}?reaudit=${sha}-${Date.now()}`,{waitUntil:'networkidle',timeout:90000});
+                assert(resp && resp.ok(), `${name} manual HTML HTTP failed`);
+                const data = await page.evaluate(()=>{
+                  const pages=[...document.querySelectorAll('.page')];
+                  return {
+                    count:pages.length,
+                    overflow:pages.map((p,i)=>({i:i+1, sw:p.scrollWidth,cw:p.clientWidth, sh:p.scrollHeight,ch:p.clientHeight})).filter(x=>x.sw>x.cw+2 || x.sh>x.ch+2),
+                    brokenImages:[...document.images].filter(i=>!i.complete || i.naturalWidth===0).map(i=>i.getAttribute('src'))
+                  }
+                });
+                assert(data.count > 0, `${name} manual has no .page elements`);
+                assert(data.overflow.length === 0, `${name} manual page overflow: ${JSON.stringify(data.overflow)}`);
+                assert(data.brokenImages.length === 0, `${name} manual broken images: ${JSON.stringify(data.brokenImages)}`);
+                assert(errors.length===0, `${name} manual runtime errors: ${errors.join('|')}`);
+                await page.screenshot({path:`${out}/${name}-manual-html.png`,fullPage:true});
+                report[name] = {...data,errors};
+                await context.close();
+              }
+              fs.writeFileSync(`${out}/MANUAL_HTML_REAUDIT.json`,JSON.stringify({commit:sha,report,result:'PASS'},null,2));
+              console.log('MANUAL_HTML_REAUDIT=PASS');
+            } finally { await browser.close(); }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          node --check /tmp/manual_browser_qa.js
+          node /tmp/manual_browser_qa.js
+
+      - name: Verify fresh evidence completeness and prevent silent failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/evidence_guard.py <<'PY'
+          from pathlib import Path
+          import json
+          out = Path('presentation-qa/central-reaudit-v1.0')
+          required = [
+              'STATIC_REAUDIT.json','BROWSER_REAUDIT.json','PDF_REAUDIT.json','MANUAL_HTML_REAUDIT.json',
+              'lp-375.png','lp-390.png','lp-430.png','lp-768.png','lp-1280.png','lp-1440.png',
+              'guide-390.png','guide-1440.png','tutorial-start-390.png','tutorial-start-1440.png',
+              'quick-manual-html.png','detailed-manual-html.png','A4_QR_DECODED.txt'
+          ]
+          missing = [x for x in required if not (out/x).exists() or (out/x).stat().st_size == 0]
+          if missing:
+              raise SystemExit('Missing/empty fresh evidence: ' + ', '.join(missing))
+          for name in ['STATIC_REAUDIT.json','BROWSER_REAUDIT.json','PDF_REAUDIT.json','MANUAL_HTML_REAUDIT.json']:
+              data=json.loads((out/name).read_text(encoding='utf-8'))
+              if data.get('failed'):
+                  raise SystemExit(f'{name}: failed={data["failed"]}')
+              if data.get('result') not in (None,'PASS'):
+                  raise SystemExit(f'{name}: result={data.get("result")}')
+          (out/'FINAL_REAUDIT_STATUS.txt').write_text('DPRO #52 VISIT AHAKI CENTRAL RE-AUDIT: PASS\n',encoding='utf-8')
+          print('EVIDENCE_GUARD=PASS')
+          PY
+          python -m py_compile /tmp/evidence_guard.py
+          python /tmp/evidence_guard.py
+
+      - name: Commit fresh re-audit evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$EVIDENCE_DIR"
+          git diff --cached --quiet && { echo 'No fresh evidence changes'; exit 1; }
+          git commit -m "Re-audit DPRO 52 VISIT AHAKI presentation and manuals"
+          git push origin HEAD:main
