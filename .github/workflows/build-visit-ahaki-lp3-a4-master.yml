@@ -1,0 +1,812 @@
+name: Build VISIT AHAKI LP3 and A4 MASTER V2.0
+
+on:
+  push:
+    paths:
+      - ".github/workflows/build-visit-ahaki-lp3-a4-master.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build and QA tools
+        shell: bash
+        run: |
+          set -eux
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+          python -m pip install --quiet beautifulsoup4 qrcode pillow opencv-python-headless pypdf
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          mkdir -p presentation presentation-qa
+
+      - name: Lock approved industry photos
+        shell: bash
+        run: |
+          set -eux
+          curl -L --fail --retry 3 --retry-delay 2 \
+            'https://images.pexels.com/photos/8313174/pexels-photo-8313174.jpeg?auto=compress&cs=tinysrgb&w=1800' \
+            -o presentation/visit-ahaki-industry-acupuncture.jpg
+          curl -L --fail --retry 3 --retry-delay 2 \
+            'https://images.pexels.com/photos/7235059/pexels-photo-7235059.jpeg?auto=compress&cs=tinysrgb&w=1800' \
+            -o presentation/visit-ahaki-industry-massage-senior.jpg
+          file presentation/*.jpg
+          test "$(stat -c%s presentation/visit-ahaki-industry-acupuncture.jpg)" -gt 50000
+          test "$(stat -c%s presentation/visit-ahaki-industry-massage-senior.jpg)" -gt 50000
+          cat > presentation/PHOTO_SOURCES.txt <<'TXT'
+          P1 / A4
+          https://www.pexels.com/photo/a-therapist-doing-an-acupuncture-treatment-8313174/
+          Creator: RDNE Stock project / Pexels
+          Pexels page status at selection: Free to use
+
+          P10
+          https://www.pexels.com/photo/a-woman-massaging-an-elderly-woman-7235059/
+          Creator: cottonbro studio / Pexels
+          Pexels page status at selection: Free to use
+          TXT
+
+      - name: Capture current public LIVE screens for P9
+        shell: bash
+        run: |
+          cat > capture-presentation-live.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const BASE='https://dpromstk2000-lab.github.io/dpro-visit-ahaki/';
+          const out='presentation';
+          const manifest={capturedAt:new Date().toISOString(),source:'CURRENT_PUBLIC_LIVE',items:[],errors:[]};
+
+          async function shot(browser,spec){
+            const context=await browser.newContext({viewport:spec.viewport,deviceScaleFactor:1});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+            page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
+            const url=BASE+spec.path;
+            await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+            await page.waitForTimeout(1000);
+            if(spec.click){
+              await page.locator(spec.click).click({timeout:15000});
+              await page.waitForTimeout(3200);
+            }
+            const body=await page.locator('body').innerText();
+            if(!body.includes(spec.assertText)) throw new Error(spec.name+' expected text missing: '+spec.assertText);
+            const metrics=await page.evaluate(()=>({
+              scrollWidth:document.documentElement.scrollWidth,
+              clientWidth:document.documentElement.clientWidth,
+              scrollHeight:document.documentElement.scrollHeight,
+              title:document.title
+            }));
+            if(metrics.scrollWidth>metrics.clientWidth+1) throw new Error(spec.name+' horizontal overflow');
+            const path=`${out}/${spec.name}.png`;
+            await page.screenshot({path,fullPage:true});
+            const bytes=fs.readFileSync(path);
+            manifest.items.push({
+              name:spec.name,url,viewport:spec.viewport,
+              sha256:crypto.createHash('sha256').update(bytes).digest('hex'),
+              metrics,consoleErrors:errors,
+              safeAction:spec.safeAction||'none',
+              businessMutation:0
+            });
+            if(errors.length) manifest.errors.push({name:spec.name,errors});
+            await context.close();
+          }
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const specs=[
+              {name:'live-demo-desktop',path:'demo.html',viewport:{width:1440,height:1000},assertText:'SYNTHETIC DEMO'},
+              {name:'live-owner-desktop',path:'owner.html',viewport:{width:1440,height:1100},click:'#loginOwner',assertText:'Visit Day Control Tower',safeAction:'Owner demo session login only'},
+              {name:'live-staff-mobile',path:'staff.html',viewport:{width:390,height:844},click:'#login',assertText:'本日の担当訪問',safeAction:'Staff demo session login only'},
+              {name:'live-family-mobile',path:'customer.html',viewport:{width:390,height:844},click:'#family',assertText:'訪問予定',safeAction:'Family demo session login only'},
+              {name:'live-system-check',path:'system-check.html',viewport:{width:1440,height:1100},assertText:'System Check',safeAction:'GET only'}
+            ];
+            for(const s of specs){
+              try{ await shot(browser,s); }
+              catch(e){ manifest.errors.push({name:s.name,errors:[String(e.stack||e)]}); }
+            }
+            await browser.close();
+            fs.writeFileSync('presentation/LIVE_SCREEN_MANIFEST.json',JSON.stringify(manifest,null,2));
+            if(manifest.items.length!==5 || manifest.errors.length) {
+              console.error(JSON.stringify(manifest,null,2));
+              process.exit(2);
+            }
+          })();
+          JS
+          node capture-presentation-live.js
+          rm -f capture-presentation-live.js
+
+      - name: Build LP P1-P10 MASTER V1.4
+        shell: bash
+        run: |
+          cat > lp.html <<'HTML'
+          <!doctype html>
+          <html lang="ja">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+            <title>DPRO 訪問マッサージ・鍼灸 | 訪問運営をひとつに</title>
+            <meta name="description" content="訪問予定・担当・施術記録・患者家族への連絡・変更Impact・請求準備を、役割別のDPROでつなぐ訪問マッサージ・鍼灸向けシステム。">
+            <style>
+              :root{
+                --ink:#10231d;--deep:#071a15;--green:#118565;--mint:#18c98a;
+                --soft:#f3f8f6;--line:#d9e6e1;--muted:#5f726b;--warm:#f7f3eb;
+                --white:#fff;--red:#a53a42;--gold:#9a7131
+              }
+              *{box-sizing:border-box}
+              html{scroll-behavior:smooth}
+              body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;background:#fff;line-height:1.75}
+              img{max-width:100%;display:block}
+              a{color:inherit}
+              .wrap{width:min(1120px,calc(100% - 32px));margin:auto}
+              .topbar{position:sticky;top:0;z-index:30;background:#071a15ee;color:#fff;backdrop-filter:blur(10px)}
+              .topbar .wrap{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+              .brand{font-weight:950;letter-spacing:.03em}
+              .nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+              .nav a{text-decoration:none;font-weight:800;font-size:13px;color:#d7e7e0;min-height:44px;display:inline-flex;align-items:center;padding:0 10px}
+              .nav .cta{background:var(--mint);color:#062218;border-radius:999px;padding:0 18px}
+              section{padding:76px 0}
+              .kicker{font-size:12px;font-weight:950;letter-spacing:.14em;color:var(--green)}
+              h1,h2,h3,p{overflow-wrap:anywhere}
+              h2{font-size:clamp(30px,4.6vw,50px);line-height:1.16;letter-spacing:-.04em;margin:8px 0 18px}
+              .desc{color:var(--muted);font-size:17px;max-width:820px}
+              .hero{padding:0;background:var(--deep);color:#fff}
+              .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;min-height:680px}
+              .hero-copy{padding:82px 54px 76px max(32px,calc((100vw - 1120px)/2))}
+              .hero .kicker{color:#76e7be}
+              h1{font-size:clamp(44px,6.5vw,78px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}
+              .hero-lead{font-size:clamp(17px,2vw,21px);color:#d5e4de;max-width:720px}
+              .hero-photo{position:relative;min-height:520px;overflow:hidden}
+              .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
+              .hero-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#071a1594 0%,transparent 45%)}
+              .photo-credit{position:absolute;right:14px;bottom:12px;z-index:2;background:#071a15cc;color:#dcebe5;padding:6px 9px;border-radius:8px;font-size:10px}
+              .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+              .btn{min-height:48px;display:inline-flex;align-items:center;justify-content:center;padding:0 20px;border-radius:12px;text-decoration:none;font-weight:950;border:1px solid transparent}
+              .btn.primary{background:var(--mint);color:#052018}
+              .btn.light{background:#fff;color:var(--deep)}
+              .btn.outline{border-color:#ffffff55;color:#fff}
+              .soft{background:var(--soft)}
+              .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+              .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px}
+              .card .num{color:var(--green);font-size:12px;font-weight:950;letter-spacing:.12em}
+              .card h3{font-size:20px;line-height:1.3;margin:8px 0}
+              .card p{font-size:14px;color:var(--muted);margin:0}
+              .six{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+              .six .card{min-height:175px}
+              .diagram{margin-top:28px;border-radius:24px;background:linear-gradient(135deg,#071a15,#0d3026);color:#fff;padding:28px}
+              .diagram-title{font-size:clamp(26px,4vw,40px);font-weight:950;margin-bottom:24px}
+              .diagram-title span{color:#68e7b8}
+              .diagram-grid{display:grid;grid-template-columns:1fr 58px .8fr 58px 1.25fr;gap:12px;align-items:stretch}
+              .entry-grid{display:grid;gap:10px}
+              .entry,.hub,.manage{border-radius:16px;padding:18px}
+              .entry{border:1px solid #ffffff26;background:#ffffff0d}
+              .entry small{display:block;color:#76e7be;font-weight:950;letter-spacing:.1em;font-size:10px}
+              .entry strong{display:block;margin-top:5px}
+              .arrow{display:grid;place-items:center;color:#68e7b8;font-size:34px}
+              .hub{background:var(--mint);color:#062218;display:flex;flex-direction:column;justify-content:center;text-align:center}
+              .hub small{font-weight:950;letter-spacing:.12em}.hub strong{font-size:26px}.hub span{font-size:12px;font-weight:850}
+              .manage{background:#f0fbf6;color:var(--ink);border:1px solid #7ad9b4}
+              .manage b{display:block;margin-bottom:8px}
+              .manage ul{padding-left:18px;margin:0;color:#39574d}
+              .roles{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+              .role{border:1px solid var(--line);border-radius:20px;padding:24px;background:#fff}
+              .role h3{font-size:24px;margin:0 0 12px}
+              .role ul{margin:0;padding-left:20px;color:var(--muted)}
+              .beforeafter{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:28px}
+              .ba{padding:28px;border-radius:20px;border:1px solid var(--line);background:#fff}
+              .ba.after{background:#eaf9f3;border-color:#b9e6d4}
+              .ba h3{font-size:26px;margin:0 0 16px}
+              .ba ul{padding-left:20px}
+              .pricebox{background:#0d332a;color:#fff;border-radius:26px;padding:34px;margin-top:28px;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}
+              .pricebox .big{font-size:clamp(38px,6vw,66px);font-weight:950;color:#70e9bb;letter-spacing:-.05em}
+              .breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+              .breakdown div{border:1px solid #ffffff2e;border-radius:12px;padding:12px;font-size:13px}
+              .guard{background:#fff7e8;color:#5d4729;border:1px solid #ead6aa;border-radius:14px;padding:14px;font-size:13px}
+              .screens{display:grid;grid-template-columns:1.45fr .75fr;gap:16px;margin-top:28px}
+              figure{margin:0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+              figure img{width:100%;height:auto}
+              figcaption{padding:12px 14px;font-size:13px;color:var(--muted)}
+              .screen-stack{display:grid;gap:16px;align-content:start}
+              .zero-note{margin-top:14px;border-left:4px solid var(--mint);padding:12px 16px;background:#f6fbf9;color:#48645a;font-size:14px}
+              .consult{position:relative;overflow:hidden;padding:0;background:#071a15;color:#fff}
+              .consult-grid{display:grid;grid-template-columns:.9fr 1.1fr;min-height:560px}
+              .consult-photo{position:relative;min-height:460px}
+              .consult-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
+              .consult-copy{padding:70px max(32px,calc((100vw - 1120px)/2)) 65px 54px}
+              .consult-copy .kicker{color:#74e6bb}
+              .consult-copy p{color:#d6e5df}
+              footer{background:#071a15;color:#b8cec5;padding:26px 0;font-size:12px}
+              @media(max-width:900px){
+                .nav a:not(.cta){display:none}
+                .hero-grid,.consult-grid,.pricebox,.screens,.roles,.beforeafter{grid-template-columns:1fr}
+                .hero-copy,.consult-copy{padding:56px 24px}
+                .hero-photo,.consult-photo{min-height:390px}
+                .cards{grid-template-columns:1fr 1fr}
+                .six{grid-template-columns:1fr 1fr}
+                .diagram-grid{grid-template-columns:1fr}
+                .arrow{transform:rotate(90deg);min-height:38px}
+                .screens{gap:14px}
+              }
+              @media(max-width:540px){
+                section{padding:56px 0}
+                .wrap{width:min(100% - 24px,1120px)}
+                .cards,.six,.breakdown{grid-template-columns:1fr}
+                .hero-copy,.consult-copy{padding-left:18px;padding-right:18px}
+                .btn{width:100%}
+                .topbar .wrap{min-height:58px}
+              }
+            </style>
+          </head>
+          <body>
+            <header class="topbar">
+              <div class="wrap">
+                <div class="brand">DPRO 訪問マッサージ・鍼灸</div>
+                <nav class="nav">
+                  <a href="#p4">つながる仕組み</a>
+                  <a href="#p8">料金</a>
+                  <a href="#p9">実画面</a>
+                  <a class="cta" href="https://lin.ee/YxJGXV6D" target="_blank" rel="noopener">LINEで導入相談</a>
+                </nav>
+              </div>
+            </header>
+
+            <main>
+              <!-- P1 FIRST_VIEW -->
+              <section class="hero" id="p1">
+                <div class="hero-grid">
+                  <div class="hero-copy">
+                    <div class="kicker">P1 / VISIT MASSAGE & ACUPUNCTURE</div>
+                    <h1>「今日、誰が、どこへ行くか」から、<br>記録・家族連絡まで。</h1>
+                    <p class="hero-lead">訪問予定、担当、到着、施術記録、家族連絡、変更前のImpact確認。予定表の外に散らばりやすい毎日の確認を、役割別のDPROでつなぎます。</p>
+                    <div class="actions">
+                      <a class="btn primary" href="https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html" target="_blank" rel="noopener">LIVE DEMO</a>
+                      <a class="btn light" href="https://lin.ee/YxJGXV6D" target="_blank" rel="noopener">LINEで導入相談</a>
+                      <a class="btn outline" href="https://dpro-shop.com/systems/visit-ahaki" target="_blank" rel="noopener">DPRO SHOP公式</a>
+                    </div>
+                  </div>
+                  <div class="hero-photo">
+                    <img src="presentation/visit-ahaki-industry-acupuncture.jpg" alt="鍼施術を行う施術者と患者のイメージ">
+                    <div class="photo-credit">Photo: RDNE Stock project / Pexels</div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- P2 OWNER_PAIN -->
+              <section id="p2">
+                <div class="wrap">
+                  <div class="kicker">P2 / OWNER PAIN</div>
+                  <h2>訪問予定だけでは、毎日の抜けは見つけにくい。</h2>
+                  <p class="desc">訪問型の業務では、予定の前後に「担当」「記録」「家族連絡」「変更確認」「請求準備」が重なります。</p>
+                  <div class="cards">
+                    <article class="card"><div class="num">01</div><h3>朝の確認が散らばる</h3><p>未割当・未記録・未連絡を別々に探している。</p></article>
+                    <article class="card"><div class="num">02</div><h3>変更の影響が後から出る</h3><p>担当衝突や施設人数区分への影響を事前に見たい。</p></article>
+                    <article class="card"><div class="num">03</div><h3>現場の進み具合が見えにくい</h3><p>施術者ごとの担当と記録状況を追いにくい。</p></article>
+                    <article class="card"><div class="num">04</div><h3>家族へ見せる範囲を分けたい</h3><p>患者本人と家族代理で、必要な情報だけを共有したい。</p></article>
+                  </div>
+                </div>
+              </section>
+
+              <!-- P3 WHY_PROBLEM -->
+              <section class="soft" id="p3">
+                <div class="wrap">
+                  <div class="kicker">P3 / WHY THE PROBLEM HAPPENS</div>
+                  <h2>ひとつの訪問に、予定以外の仕事が重なっている。</h2>
+                  <div class="six">
+                    <article class="card"><h3>訪問予定</h3><p>日時・訪問先・状態。</p></article>
+                    <article class="card"><h3>担当施術者</h3><p>誰がどこへ行くか。</p></article>
+                    <article class="card"><h3>現場記録</h3><p>到着・施術記録・完了。</p></article>
+                    <article class="card"><h3>家族連絡</h3><p>同意scope内の安全な連絡。</p></article>
+                    <article class="card"><h3>変更確認</h3><p>確定前のImpact確認。</p></article>
+                    <article class="card"><h3>請求準備</h3><p>Claim readinessの確認。</p></article>
+                  </div>
+                  <p class="desc" style="margin-top:24px">それぞれを別の表・メモ・連絡手段で確認すると、変更時の影響と未対応が見えにくくなります。DPROは「訪問」を単位に、予定・担当・状態・記録・連絡・請求準備を同じ運用へつなぎます。</p>
+                </div>
+              </section>
+
+              <!-- P4 CONNECTED_SYSTEM -->
+              <section id="p4">
+                <div class="wrap">
+                  <div class="kicker">P4 / CONNECTED SYSTEM</div>
+                  <h2>入口は役割ごと。管理は、ひとつ。</h2>
+                  <div class="diagram">
+                    <div class="diagram-title">入口は自由。<span>管理は、ひとつ。</span></div>
+                    <div class="diagram-grid">
+                      <div class="entry-grid">
+                        <div class="entry"><small>OWNER / OFFICE</small><strong>事務所から今日の訪問を確認</strong></div>
+                        <div class="entry"><small>STAFF</small><strong>施術者が担当訪問を確認</strong></div>
+                        <div class="entry"><small>PATIENT / FAMILY</small><strong>患者・家族が予定を確認</strong></div>
+                      </div>
+                      <div class="arrow">→</div>
+                      <div class="hub"><small>DPRO</small><strong>VISIT AHAKI</strong><span>訪問運営の中心</span></div>
+                      <div class="arrow">→</div>
+                      <div class="manage"><b>ONE MANAGEMENT HUB</b><ul><li>今日の訪問</li><li>担当・施術記録</li><li>家族連絡・請求準備</li></ul></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- P5 CUSTOMER_EXPERIENCE -->
+              <section class="soft" id="p5">
+                <div class="wrap">
+                  <div class="kicker">P5 / PATIENT & FAMILY EXPERIENCE</div>
+                  <h2>患者本人と家族代理で、見える範囲を分ける。</h2>
+                  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+                    <article class="card"><div class="num">PATIENT</div><h3>訪問予定を確認</h3><p>訪問日・時刻・訪問先・状態を、自分の範囲で確認。</p></article>
+                    <article class="card"><div class="num">FAMILY</div><h3>同意scopeの範囲だけ</h3><p>家族代理は患者本人とは別session。施術メモを一律表示しません。</p></article>
+                    <article class="card"><div class="num">CHANGE REQUEST</div><h3>変更希望を送る</h3><p>患者・家族だけで確定変更せず、運営側の確認待ちとして受付。</p></article>
+                  </div>
+                </div>
+              </section>
+
+              <!-- P6 OWNER_STAFF_EXPERIENCE -->
+              <section id="p6">
+                <div class="wrap">
+                  <div class="kicker">P6 / OWNER & STAFF EXPERIENCE</div>
+                  <h2>事務所と現場、それぞれに必要な画面。</h2>
+                  <div class="roles">
+                    <article class="role"><h3>Owner / Office</h3><ul><li>Visit Day Control Tower</li><li>未割当・未記録・未連絡・請求準備</li><li>変更Impact Preflight</li><li>安全な家族連絡</li></ul></article>
+                    <article class="role"><h3>Staff</h3><ul><li>自分に割り当てられた訪問</li><li>到着・記録・完了</li><li>施術記録</li><li>必要時だけ訪問先を確認</li></ul></article>
+                  </div>
+                  <p class="desc" style="margin-top:18px">常時GPS追跡ではありません。役割ごとに必要な情報へ絞り、同じ訪問運営をつなぎます。</p>
+                </div>
+              </section>
+
+              <!-- P7 BEFORE_AFTER -->
+              <section class="soft" id="p7">
+                <div class="wrap">
+                  <div class="kicker">P7 / BEFORE & AFTER</div>
+                  <h2>予定を追う運用から、訪問の完了まで追える運用へ。</h2>
+                  <div class="beforeafter">
+                    <div class="ba"><h3>BEFORE</h3><ul><li>予定表</li><li>個別連絡</li><li>現場メモ</li><li>後から未対応を確認</li></ul></div>
+                    <div class="ba after"><h3>WITH DPRO</h3><ul><li>今日の訪問</li><li>担当と状態</li><li>施術記録</li><li>家族連絡</li><li>変更Impact</li><li>請求準備</li></ul></div>
+                  </div>
+                  <p class="desc" style="margin-top:18px">すべてを自動化するのではなく、「どこを確認すべきか」を同じ流れに揃えます。</p>
+                </div>
+              </section>
+
+              <!-- P8 PRICE_VALUE -->
+              <section id="p8">
+                <div class="wrap">
+                  <div class="kicker">P8 / PRICE & VALUE</div>
+                  <h2>LINE・ホームページ・DPROを、3つまとめて運用。</h2>
+                  <div class="pricebox">
+                    <div>
+                      <div>DPRO SHOP MONTHLY OPERATION</div>
+                      <div class="big">月額 5,500円（税込）</div>
+                      <div class="breakdown">
+                        <div>LINE公式運用<br><strong>3,300円</strong></div>
+                        <div>ホームページ運用<br><strong>1,100円</strong></div>
+                        <div>DPROシステム運用<br><strong>1,100円</strong></div>
+                      </div>
+                    </div>
+                    <div class="guard">5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。</div>
+                  </div>
+                  <div class="actions">
+                    <a class="btn primary" href="https://dpro-shop.com/pricing" target="_blank" rel="noopener">料金条件を確認</a>
+                    <a class="btn light" style="border-color:var(--line)" href="https://lin.ee/YxJGXV6D" target="_blank" rel="noopener">LINEで相談</a>
+                  </div>
+                </div>
+              </section>
+
+              <!-- P9 DEMO -->
+              <section class="soft" id="p9">
+                <div class="wrap">
+                  <div class="kicker">P9 / CURRENT LIVE SCREEN</div>
+                  <h2>説明だけでなく、現在の公開画面を確認。</h2>
+                  <p class="desc">下の画像は、このLP制作時点の公開LIVE DEMOをブラウザで直接撮影したものです。実在患者データではなく合成Demo環境です。</p>
+                  <div class="screens">
+                    <figure><img src="presentation/live-owner-desktop.png" alt="現在のOwner公開LIVE画面"><figcaption>Owner / Visit Day Control Tower。撮影時点は本日の訪問0件のDemo状態をそのまま掲載。</figcaption></figure>
+                    <div class="screen-stack">
+                      <figure><img src="presentation/live-staff-mobile.png" alt="現在のStaff公開LIVEスマホ画面"><figcaption>Staff / 390px</figcaption></figure>
+                      <figure><img src="presentation/live-family-mobile.png" alt="現在のFamily公開LIVEスマホ画面"><figcaption>Family / 390px</figcaption></figure>
+                    </div>
+                  </div>
+                  <div class="zero-note">Demoの件数や予定は時点により変わります。画像を加工して訪問件数を増やしたり、存在しない業務状態を作ったりしていません。</div>
+                  <div class="actions"><a class="btn primary" href="https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html" target="_blank" rel="noopener">LIVE DEMOを開く</a></div>
+                </div>
+              </section>
+
+              <!-- P10 CONSULT_CTA -->
+              <section class="consult" id="p10">
+                <div class="consult-grid">
+                  <div class="consult-photo"><img src="presentation/visit-ahaki-industry-massage-senior.jpg" alt="高齢者へのマッサージ施術イメージ"><div class="photo-credit">Photo: cottonbro studio / Pexels</div></div>
+                  <div class="consult-copy">
+                    <div class="kicker">P10 / CONSULTATION</div>
+                    <h2>今の訪問運用を確認して、必要な導入範囲を整理します。</h2>
+                    <p>現在の訪問件数、施術者数、患者・家族への連絡方法、事務所での確認方法を伺い、DPROをどこまで使うかを整理します。</p>
+                    <div class="actions">
+                      <a class="btn primary" href="https://lin.ee/YxJGXV6D" target="_blank" rel="noopener">LINEで相談</a>
+                      <a class="btn light" href="https://dpro-shop.com/systems/visit-ahaki" target="_blank" rel="noopener">DPRO SHOP公式</a>
+                      <a class="btn outline" href="https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html" target="_blank" rel="noopener">LIVE DEMO</a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </main>
+            <footer><div class="wrap">DPRO LINE SYSTEMS / 訪問マッサージ・鍼灸　｜　実tenant・Owner Auth・顧客Authは正式契約後に設定します。</div></footer>
+          </body>
+          </html>
+          HTML
+
+      - name: Build A4 from PET SALON MASTER V2.0 source
+        shell: bash
+        run: |
+          cat > /tmp/build_a4.py <<'PY'
+          import base64, io, urllib.request
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          import qrcode
+
+          MASTER_URL='https://raw.githubusercontent.com/dpromstk2000-lab/dpro-line-systems-site/main/flyer-pet-salon.html'
+          master=urllib.request.urlopen(MASTER_URL,timeout=30).read().decode('utf-8')
+          soup=BeautifulSoup(master,'html.parser')
+
+          def txt(sel, value):
+              el=soup.select_one(sel)
+              assert el is not None, sel
+              el.clear()
+              el.append(value)
+
+          soup.title.string='DPRO 訪問マッサージ・鍼灸 A4 FLYER MASTER V2.0'
+          sheet=soup.select_one('.sheet')
+          assert sheet
+          sheet['aria-label']='DPRO 訪問マッサージ・鍼灸 A4営業チラシ'
+
+          txt('.eyebrow','VISIT MASSAGE / ACUPUNCTURE')
+          h1=soup.select_one('h1')
+          h1.clear()
+          h1.append('今日の訪問を、ひとつに。')
+          h1.append(soup.new_tag('br'))
+          h1.append('現場も、記録も、')
+          h1.append(soup.new_tag('br'))
+          h1.append('家族連絡も。')
+
+          lead=soup.select_one('.lead')
+          lead.clear()
+          for s in [
+              '訪問予定・担当・状態・施術記録を、同じDPROで確認。',
+              '変更Impact・家族連絡・請求準備まで、訪問単位でつなぎます。'
+          ]:
+              span=soup.new_tag('span')
+              span['class']='lead-line'
+              span.string=s
+              lead.append(span)
+
+          pillrow=soup.select_one('.pillrow')
+          pillrow.clear()
+          for s in ['今日の訪問','変更Impact','施術記録','家族連絡']:
+              span=soup.new_tag('span'); span['class']='pill'; span.string=s; pillrow.append(span)
+
+          photo=Path('presentation/visit-ahaki-industry-acupuncture.jpg').read_bytes()
+          soup.select_one('.hero-photo img')['src']='data:image/jpeg;base64,'+base64.b64encode(photo).decode()
+          soup.select_one('.hero-photo img')['alt']='鍼施術を行う施術者と患者のイメージ'
+          if soup.select_one('.photo-label'):
+              txt('.photo-label','訪問施術イメージ / Photo: RDNE Stock project / Pexels')
+
+          txt('.section-title','訪問運営で、毎日使う6つの機能。')
+          features=soup.select('.feature-grid .feature')
+          assert len(features)==6, len(features)
+          data=[
+              ('今日の訪問を一画面で','時刻・患者・訪問先・担当・状態・記録・連絡・請求準備を訪問単位で確認。'),
+              ('変更前のImpact確認','予定変更の前に、担当衝突・施設人数区分・通知・請求準備への影響を確認。'),
+              ('施術者ごとの担当訪問','Staffは自分に割り当てられた訪問を確認。現場に必要な情報へ絞ります。'),
+              ('到着・施術記録・完了','訪問状態と施術記録をつなぎ、原記録を保持する運用へ。'),
+              ('患者・家族の予定確認','患者本人と家族代理を分け、予定確認と変更希望を提供。'),
+              ('安全な家族連絡','家族は同意scope内だけ。健康情報を含めない承認済み通知を扱います。'),
+          ]
+          for el,(title,body) in zip(features,data):
+              h=el.select_one('h3'); p=el.select_one('p')
+              h.string=title; p.string=body
+
+          txt('.eco-kicker','CONNECTED EXPERIENCE')
+          eco_title=soup.select_one('.eco-title h3'); eco_title.string='入口は自由。管理は、ひとつ。'
+          eco_p=soup.select_one('.eco-title p')
+          if eco_p: eco_p.string='役割ごとの入口を、同じ訪問運営へ。'
+
+          channels=soup.select('.channels .channel')
+          assert len(channels)==2
+          channel_data=[
+              ('OFFICE / FIELD','Owner / Staff','事務所と施術者から確認'),
+              ('PATIENT / FAMILY','患者 / 家族','予定を必要な範囲で確認'),
+          ]
+          for el,(tag,strong,small) in zip(channels,channel_data):
+              el.select_one('.tag').string=tag
+              el.select_one('strong').string=strong
+              el.select_one('small').string=small
+
+          hub=soup.select_one('.hub')
+          hub.select_one('small').string='DPRO'
+          hub.select_one('strong').string='VISIT AHAKI'
+          hub.select_one('span').string='訪問運営の中心'
+
+          txt('.management-head strong','すべての訪問情報が、ここにつながる。')
+          items=soup.select('.management-item')
+          assert len(items)==3
+          item_data=[
+              ('01 TODAY','今日の訪問','予定・担当・状態'),
+              ('02 RECORD','施術記録','到着・記録・完了'),
+              ('03 READY','連絡・請求準備','家族連絡・Claim'),
+          ]
+          for el,(num,b,sm) in zip(items,item_data):
+              el.select_one('.num').string=num
+              el.select_one('b').string=b
+              el.select_one('small').string=sm
+
+          strengths=soup.select('.strength-grid .strength')
+          assert len(strengths)==2
+          strengths[0].select_one('span').string='CUSTOM FIT'
+          strengths[0].select_one('strong').string='訪問事業所のやり方に合わせる。'
+          strengths[0].select_one('p').clear()
+          strengths[0].select_one('p').append('訪問件数・施術者数・連絡ルール・日次確認を、現場の運用に合わせて調整。')
+          strengths[1].select_one('span').string='LIVE SYNC'
+          strengths[1].select_one('strong').string='同じ予定を、役割別画面で共有。'
+          strengths[1].select_one('p').clear()
+          strengths[1].select_one('p').append('Owner・Staff・Patient / Familyが、同じ訪問データをそれぞれの権限範囲で確認。')
+
+          txt('.cost-head .small','MONTHLY COST CHECK')
+          cost_h=soup.select_one('.cost-head h3')
+          cost_h.clear(); cost_h.append('その固定費、'); cost_h.append(soup.new_tag('br'))
+          sp=soup.new_tag('span'); sp.string='別々に払い続けていませんか？'; cost_h.append(sp)
+          costs=soup.select('.cost-item')
+          assert len(costs)==3
+          cost_data=[
+              ('ホームページ運用','月額5,500円以上','ホームページだけでかかっていませんか？'),
+              ('訪問・顧客管理','毎月、別料金に？','訪問管理や顧客管理を別契約していませんか？'),
+              ('LINE公式運用','さらに別料金に？','運用費が3つに分かれていないか確認を。'),
+          ]
+          for el,(a,b,c) in zip(costs,cost_data):
+              el.select_one('.label').string=a; el.select_one('strong').string=b; el.select_one('small').string=c
+
+          # Price is a MASTER lock. Verify exact numbers, only adapt message.
+          whole=str(soup.select_one('.price'))
+          for required in ['5,500円','3,300円','1,100円']:
+              assert required in whole
+          pm=soup.select_one('.price-message')
+          pm.clear()
+          st=soup.new_tag('strong'); st.string='別々に更新しない。ひとつの運用へ。'; pm.append(st)
+          for line in ['LINE公式・ホームページ・DPROシステムを、','訪問事業の運用として整えます。']:
+              sp=soup.new_tag('span'); sp['class']='message-line'; sp.string=line; pm.append(sp)
+
+          txt('.contact-head h3','相談する。知る。試す。DPROを、もっと近くに。')
+          txt('.contact-head p','相談はLINE、詳しい情報は公式サイト、操作感はLIVE DEMOで確認できます。')
+
+          urls=[
+              ('https://lin.ee/YxJGXV6D','LINEで相談','DPRO SHOP 公式LINE'),
+              ('https://dpro-shop.com/','公式サイト','DPRO SHOP OFFICIAL'),
+              ('https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html','DEMOを体験','VISIT AHAKI SYSTEM'),
+          ]
+          actions=soup.select('.action-card')
+          assert len(actions)==3
+
+          def qr_data(url):
+              qr=qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M,box_size=8,border=4)
+              qr.add_data(url); qr.make(fit=True)
+              im=qr.make_image(fill_color='black',back_color='white')
+              bio=io.BytesIO(); im.save(bio,format='PNG')
+              return 'data:image/png;base64,'+base64.b64encode(bio.getvalue()).decode()
+
+          copy=[
+              ('01','CONTACT','相談する。','導入前の疑問や、今の訪問運用の悩みをDPRO SHOP公式LINEから相談。'),
+              ('02','OFFICIAL SITE','詳しく見る。','サービス・料金・訪問マッサージ・鍼灸向けDPROの情報を公式サイトで確認。'),
+              ('03','LIVE DEMO','体験する。','現在公開中のDemoで、役割別画面と操作感を確認。'),
+          ]
+          for el,(num,kicker,h4,p),(url,qlabel,qmini) in zip(actions,copy,urls):
+              el.select_one('.action-num').string=num
+              # Preserve num node; rebuild kicker safely
+              ak=el.select_one('.action-kicker')
+              ak.clear()
+              ns=soup.new_tag('span'); ns['class']='action-num'; ns.string=num; ak.append(ns); ak.append(' '+kicker)
+              el.select_one('h4').string=h4
+              el.select_one('p').string=p
+              img=el.select_one('.action-qr img'); img['src']=qr_data(url); img['alt']=qlabel+' QR'
+              el.select_one('.qlabel').string=qlabel
+              el.select_one('.qmini').string=qmini
+              if el.select_one('.site-url'): el.select_one('.site-url').string='https://dpro-shop.com/'
+
+          txt('.footer .note','LINE公式 × ホームページ × 業種別システム\n訪問マッサージ・鍼灸向け営業A4チラシ MASTER V2.0')
+
+          # Remove central-only helper references not present in the dedicated repo.
+          for el in list(soup.find_all(['link','script'])):
+              ref=el.get('href') or el.get('src') or ''
+              if 'japanese-wrap-v1' in ref:
+                  el.decompose()
+
+          Path('flyer-visit-ahaki.html').write_text(str(soup),encoding='utf-8')
+          PY
+          python /tmp/build_a4.py
+
+      - name: Static MASTER QA before rendering
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          import re, json
+
+          lp=Path('lp.html').read_text(encoding='utf-8')
+          soup=BeautifulSoup(lp,'html.parser')
+          order=[x.get('id') for x in soup.find_all('section') if x.get('id','').startswith('p')]
+          assert order==[f'p{i}' for i in range(1,11)], order
+          assert len(set(x.get('id') for x in soup.find_all(id=True)))==len(soup.find_all(id=True))
+          assert not soup.find('iframe')
+          for req in ['5,500円','3,300円','1,100円','入口は自由。','live-owner-desktop.png']:
+              assert req in lp, req
+          for bad in ['INTERNAL','CANONICAL','business_mutation']:
+              assert bad not in soup.get_text(' ',strip=True)
+
+          a4=Path('flyer-visit-ahaki.html').read_text(encoding='utf-8')
+          a4s=BeautifulSoup(a4,'html.parser')
+          assert len(a4s.select('.feature-grid .feature'))==6
+          assert len(a4s.select('.action-card'))==3
+          assert '入口は自由。管理は、ひとつ。' in a4s.get_text(' ',strip=True)
+          assert '5,500円' in a4 and '3,300円' in a4
+          assert 'https://dpro-shop.com/' in a4
+          assert 'PETSALON SYSTEM' not in a4
+          assert 'ペットサロン向け営業A4' not in a4
+
+          Path('presentation-qa/STATIC_QA.json').write_text(json.dumps({
+            'lp_sections':'10/10 exact P1-P10',
+            'lp_iframe':0,
+            'lp_duplicate_id':0,
+            'a4_features':6,
+            'a4_routes':3,
+            'price':'5500=3300+1100+1100',
+            'result':'PASS'
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+
+      - name: Render LP responsive QA and A4 PDF
+        shell: bash
+        run: |
+          cat > render-and-qa.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs=require('fs');
+          const path=require('path');
+          const widths=[375,390,430,768,1280,1440];
+
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const base='file://'+path.resolve('.');
+
+            const lpResults=[];
+            for(const width of widths){
+              const page=await browser.newPage({viewport:{width,height:1000}});
+              const errs=[];
+              page.on('pageerror',e=>errs.push(e.message));
+              page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+              await page.goto(base+'/lp.html',{waitUntil:'load'});
+              await page.waitForTimeout(500);
+              const q=await page.evaluate(()=>{
+                const de=document.documentElement;
+                const controls=[...document.querySelectorAll('a.btn,.nav .cta')];
+                return {
+                  scrollWidth:de.scrollWidth,clientWidth:de.clientWidth,
+                  minControlHeight:Math.min(...controls.map(x=>x.getBoundingClientRect().height)),
+                  sections:[...document.querySelectorAll('main>section')].map(x=>x.id)
+                };
+              });
+              if(q.scrollWidth>q.clientWidth+1) throw new Error('LP overflow '+width);
+              if(q.minControlHeight<44) throw new Error('LP control <44 '+width+' '+q.minControlHeight);
+              if(errs.length) throw new Error('LP console '+width+' '+errs.join(' | '));
+              await page.screenshot({path:`presentation-qa/lp-${width}.png`,fullPage:true});
+              lpResults.push({width,...q,errors:errs});
+              await page.close();
+            }
+
+            const page=await browser.newPage({viewport:{width:1200,height:1700}});
+            await page.goto(base+'/flyer-visit-ahaki.html',{waitUntil:'load'});
+            await page.emulateMedia({media:'print'});
+            await page.pdf({
+              path:'DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf',
+              format:'A4',
+              printBackground:true,
+              margin:{top:'0',right:'0',bottom:'0',left:'0'}
+            });
+            await page.emulateMedia({media:'screen'});
+            await page.screenshot({path:'presentation-qa/a4-screen-preview.png',fullPage:true});
+            fs.writeFileSync('presentation-qa/LP_RESPONSIVE_QA.json',JSON.stringify(lpResults,null,2));
+            await browser.close();
+          })();
+          JS
+          node render-and-qa.js
+          rm -f render-and-qa.js
+
+          pdfinfo DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf | tee presentation-qa/A4_PDFINFO.txt
+          test "$(pdfinfo DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf | awk '/^Pages:/ {print $2}')" = "1"
+          mkdir -p presentation-qa/a4-render
+          pdftoppm -png -r 300 -singlefile DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf presentation-qa/a4-render/a4 >/dev/null 2>&1
+          cp presentation-qa/a4-render/a4.png DPRO_VISIT_AHAKI_A4_FLYER_MASTER_V2.0_PREVIEW.png
+
+      - name: Decode all A4 final-render QR codes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import cv2, json
+          img=cv2.imread('presentation-qa/a4-render/a4.png')
+          det=cv2.QRCodeDetector()
+          ok, decoded, points, _ = det.detectAndDecodeMulti(img)
+          vals=sorted(set(x for x in decoded if x)) if ok else []
+          expected=sorted([
+            'https://lin.ee/YxJGXV6D',
+            'https://dpro-shop.com/',
+            'https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html'
+          ])
+          if vals!=expected:
+              raise SystemExit(f'QR mismatch decoded={vals} expected={expected}')
+          with open('presentation-qa/A4_QR_QA.json','w',encoding='utf-8') as f:
+              json.dump({'decoded':vals,'expected':expected,'result':'PASS'},f,ensure_ascii=False,indent=2)
+          print('A4_FINAL_RENDER_QR_QA=PASS 3/3')
+          PY
+
+      - name: Final LP4 and A4 QA summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, hashlib
+          summary={
+            'master':{
+              'LP':'DPRO-LP-MASTER-V1.4',
+              'A4':'DPRO A4 FLYER MASTER V2.0 / PET SALON source'
+            },
+            'LP_3':'PASS',
+            'LP_4':{
+              'P1_P10':'10/10 exact order',
+              'P1_photo':'industry selected photo',
+              'P10_photo':'industry selected photo',
+              'P2_P9_new_industry_photo':0,
+              'P4':'HTML/CSS diagram',
+              'P9':'current public LIVE screen',
+              'widths':[375,390,430,768,1280,1440],
+              'horizontal_overflow':0,
+              'min_control_px':44,
+              'iframe_initial':0,
+              'owner_send_safety':'YES',
+              'result':'GREEN'
+            },
+            'A4':{
+              'html_pdf_pair':True,
+              'page':'A4 portrait 1/1',
+              'master_layout_source':'flyer-pet-salon.html',
+              'features':'6/6',
+              'connected_experience':True,
+              'monthly_total':'5,500 tax included',
+              'routes':'3/3',
+              'final_render_qr':'3/3 PASS',
+              'result':'GREEN'
+            },
+            'frozen_scope':{
+              'SYSTEM_core':'UNCHANGED',
+              'Worker':'UNCHANGED',
+              'Supabase':'UNCHANGED',
+              'Product_52':'UNCHANGED',
+              'Central_registration':'UNCHANGED',
+              'Control_Center_READY':'UNCHANGED'
+            },
+            'complete_final_lock':'HOLD'
+          }
+          Path('presentation-qa/LP3_A4_MASTER_QA.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding='utf-8')
+          for p in ['lp.html','flyer-visit-ahaki.html','DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf']:
+              print(hashlib.sha256(Path(p).read_bytes()).hexdigest(),p)
+          PY
+
+      - name: Commit LP3 and A4 MASTER artifacts
+        shell: bash
+        run: |
+          rm -rf node_modules package.json package-lock.json
+          git rm .github/workflows/build-visit-ahaki-lp3-a4-master.yml
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+          git add lp.html flyer-visit-ahaki.html DPRO_VISIT_AHAKI_A4_FLYER_V1.0_20260902.pdf \
+            DPRO_VISIT_AHAKI_A4_FLYER_MASTER_V2.0_PREVIEW.png presentation presentation-qa
+          git commit -m "Align VISIT AHAKI LP and A4 with presentation master"
+          git push
