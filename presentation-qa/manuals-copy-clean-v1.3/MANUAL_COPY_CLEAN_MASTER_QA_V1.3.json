@@ -1,0 +1,27 @@
+{
+  "master": "CENTRAL PRESENTATION / TUTORIAL MASTER V1.2",
+  "manual_public_copy_patch": "V1.3 DIRECT",
+  "quick_start": {
+    "pages": 3,
+    "public_copy_clean": true,
+    "final_render_qr": "5/5 PASS",
+    "preview_png": true,
+    "result": "GREEN"
+  },
+  "detailed_manual": {
+    "pages": 10,
+    "public_copy_clean": true,
+    "final_render_qr": "10/10 PASS",
+    "preview_png": true,
+    "result": "GREEN"
+  },
+  "public_internal_terms": 0,
+  "guide_links": "UNCHANGED_AND_CONNECTED",
+  "frozen_scope": "PASS",
+  "presentation_gate": "READY_FOR_PUBLIC_FINAL_QA",
+  "complete_final_lock": "HOLD_UNTIL_PUBLIC_FINAL_QA",
+  "sha256": {
+    "DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf": "303baa04b83290705533877b3b951cd9ede70e874bac67b56b3669959121c0be",
+    "DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf": "55f0abdd636474846b2b250d5dd9a9cedcfdd3f9534403ea1917131c94b62848"
+  }
+}

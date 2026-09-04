@@ -1,0 +1,27 @@
+{
+  "files": {
+    "manuals/quick-start-master-v1.1.html": {
+      "banned_hits": [],
+      "chars": 1291
+    },
+    "manuals/detailed-manual-master-v1.1.html": {
+      "banned_hits": [],
+      "chars": 3052
+    }
+  },
+  "banned_count": 0,
+  "required": [
+    "First10 全10ステップ",
+    "現在公開中の実画面を掲載",
+    "安全な利用範囲",
+    "お客様専用環境",
+    "First10 - 全10ステップ",
+    "変更前の影響確認",
+    "更新履歴を保持する運用",
+    "同意範囲",
+    "安全な家族連絡",
+    "本番の安全設定",
+    "契約後に設定する項目"
+  ],
+  "result": "PASS"
+}
