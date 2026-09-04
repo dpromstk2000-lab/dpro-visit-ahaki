@@ -1,0 +1,30 @@
+{
+  "system": "DPRO VISIT AHAKI",
+  "master": "CENTRAL PRESENTATION / TUTORIAL MASTER V1.2",
+  "public_final_qa": "GREEN",
+  "A4": "GREEN",
+  "LP": "GREEN",
+  "Tutorial": "GREEN",
+  "Guide_Center": "GREEN",
+  "Quick_Start": {
+    "pages": 3,
+    "public_byte_identity": "PASS",
+    "public_copy": "PASS",
+    "final_render_qr_from_v13": "5/5 PASS"
+  },
+  "Detailed_Manual": {
+    "pages": 10,
+    "public_byte_identity": "PASS",
+    "public_copy": "PASS",
+    "final_render_qr_from_v13": "10/10 PASS"
+  },
+  "frozen_scope": "PASS",
+  "presentation_tutorial_gate_v1_2": "PASS",
+  "complete_final_lock": "READY_TO_RESTORE",
+  "source_commit_before_public_qa": "c345226da06f708669cefc51773038c918ff05eb",
+  "sha256": {
+    "quick": "303baa04b83290705533877b3b951cd9ede70e874bac67b56b3669959121c0be",
+    "detailed": "55f0abdd636474846b2b250d5dd9a9cedcfdd3f9534403ea1917131c94b62848",
+    "a4": "e15295bf9b7709463f34f18eb79892fa24c019c3ed7e7e1dee7687462d4b0091"
+  }
+}

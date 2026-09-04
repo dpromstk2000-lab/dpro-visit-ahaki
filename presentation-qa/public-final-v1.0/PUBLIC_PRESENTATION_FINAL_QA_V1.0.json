@@ -1,0 +1,77 @@
+{
+  "pages": [
+    {
+      "path": "lp.html",
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "title": "DPRO 訪問マッサージ・鍼灸 | 訪問運営をひとつに",
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    {
+      "path": "guide.html",
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "title": "Guide Center | DPRO 訪問マッサージ・鍼灸",
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    {
+      "path": "tutorial.html?mode=start",
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "title": "First10 | DPRO 訪問マッサージ・鍼灸",
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    {
+      "path": "lp.html",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "title": "DPRO 訪問マッサージ・鍼灸 | 訪問運営をひとつに",
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    {
+      "path": "guide.html",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "title": "Guide Center | DPRO 訪問マッサージ・鍼灸",
+      "consoleErrors": 0,
+      "result": "PASS"
+    },
+    {
+      "path": "tutorial.html?mode=start",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "title": "First10 | DPRO 訪問マッサージ・鍼灸",
+      "consoleErrors": 0,
+      "result": "PASS"
+    }
+  ],
+  "first10": {
+    "Start": "PASS",
+    "Next": "PASS",
+    "Close": "PASS",
+    "Resume": "PASS",
+    "Esc": "PASS",
+    "Replay": "PASS",
+    "publicConsoleErrors": 0,
+    "result": "PASS"
+  },
+  "guideLinks": {
+    "quick": "DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf",
+    "detailed": "DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf",
+    "start": "tutorial.html?mode=start",
+    "resume": "tutorial.html?mode=resume",
+    "replay": "tutorial.html?mode=replay",
+    "result": "PASS"
+  },
+  "result": "GREEN"
+}
