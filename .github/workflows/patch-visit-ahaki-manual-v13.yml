@@ -1,0 +1,65 @@
+name: Patch VISIT AHAKI Manual V1.3
+
+on:
+  push:
+    paths:
+      - ".github/workflows/patch-visit-ahaki-manual-v13.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch Manual V1.2 public-copy workflow to V1.3
+        shell: bash
+        run: |
+          set -eux
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('.github/workflows/finalize-visit-ahaki-manual-copy-clean.yml')
+          s = p.read_text(encoding='utf-8')
+
+          old_name = 'name: Finalize VISIT AHAKI Manual Public Copy V1.2'
+          new_name = 'name: Finalize VISIT AHAKI Manual Public Copy V1.3'
+          if s.count(old_name) != 1:
+              raise SystemExit(f'workflow name match count={s.count(old_name)}')
+          s = s.replace(old_name, new_name)
+
+          anchor = "            ('DPRO 訪問マッサージ・鍼灸 / Safe Communication','DPRO 訪問マッサージ・鍼灸 / 安全な家族連絡','communication eyebrow'),"
+          extra = (
+              "            ('家族の同意scopeを超えない','家族の同意範囲を超えない','line scope'),\n"
+              "            ('正式契約後に事業者ごとの資格情報と受信者Bindingを設定・検証してから有効化します。','正式契約後に事業者ごとのLINE連携情報と受信者の紐付けを設定・確認してから有効化します。','faq binding'),\n"
+              "            ('同意scopeを超える情報は表示しません。','同意範囲を超える情報は表示しません。','faq scope'),\n"
+          )
+          if s.count(anchor) != 1:
+              raise SystemExit(f'anchor match count={s.count(anchor)}')
+          s = s.replace(anchor, extra + anchor)
+
+          for term in ["'scope'", "'Binding'"]:
+              if term not in s:
+                  raise SystemExit(f'banned guard missing: {term}')
+
+          p.write_text(s, encoding='utf-8')
+          print('MANUAL_V1.3_WORKFLOW_PATCH=PASS')
+          PY
+
+      - name: Commit patched finalize workflow and self-remove
+        shell: bash
+        run: |
+          set -eux
+          git rm .github/workflows/patch-visit-ahaki-manual-v13.yml
+          git config user.name "DPRO SYSTEM FACTORY"
+          git config user.email "actions@users.noreply.github.com"
+          git add .github/workflows/finalize-visit-ahaki-manual-copy-clean.yml
+          git diff --cached --name-only
+          git commit -m "Patch VISIT AHAKI Manual public copy workflow V1.3"
+          git push
