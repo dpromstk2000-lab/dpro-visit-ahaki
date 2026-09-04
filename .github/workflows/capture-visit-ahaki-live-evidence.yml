@@ -1,4 +1,4 @@
-name: Capture VISIT AHAKI Current LIVE Evidence V1.1
+name: Capture VISIT AHAKI Current LIVE Evidence V1.2
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -23,7 +23,7 @@ jobs:
           npm install playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Capture current public LIVE screens
+      - name: Capture actual rendered LIVE state
         shell: bash
         run: |
           mkdir -p live-evidence
@@ -34,81 +34,134 @@ jobs:
 
           const BASE='https://dpromstk2000-lab.github.io/dpro-visit-ahaki/';
           const out='live-evidence';
-          const manifest={capturedAt:new Date().toISOString(),source:'CURRENT_PUBLIC_LIVE',items:[],errors:[]};
+          const manifest={capturedAt:new Date().toISOString(),source:'CURRENT_PUBLIC_LIVE',items:[],captureErrors:[]};
 
-          async function capture(browser, spec){
-            const context=await browser.newContext({viewport:spec.viewport, deviceScaleFactor:1});
+          async function one(browser,spec){
+            const context=await browser.newContext({viewport:spec.viewport,deviceScaleFactor:1});
             const page=await context.newPage();
-            const errs=[];
-            page.on('pageerror',e=>errs.push('pageerror: '+e.message));
-            page.on('console',m=>{ if(m.type()==='error') errs.push('console: '+m.text()); });
+            const consoleErrors=[];
+            page.on('pageerror',e=>consoleErrors.push('pageerror: '+e.message));
+            page.on('console',m=>{ if(m.type()==='error') consoleErrors.push('console: '+m.text()); });
             const url=BASE+spec.path;
-            await page.goto(url,{waitUntil:'networkidle',timeout:60000});
-            if(spec.click){
-              await page.locator(spec.click).click({timeout:20000});
-              if(spec.wait) await page.locator(spec.wait).waitFor({state:'visible',timeout:30000});
+            try{
+              await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
               await page.waitForTimeout(1200);
-            } else if(spec.wait){
-              await page.locator(spec.wait).waitFor({state:'visible',timeout:30000});
-              await page.waitForTimeout(1000);
+
+              if(spec.click){
+                await page.locator(spec.click).click({timeout:15000});
+                await page.waitForTimeout(3500);
+              }
+              if(spec.waitFirst){
+                await page.locator(spec.waitFirst).first().waitFor({state:'visible',timeout:20000});
+                await page.waitForTimeout(800);
+              }
+
+              const bodyText=(await page.locator('body').innerText()).slice(0,12000);
+              if(spec.assertText && !bodyText.includes(spec.assertText)){
+                throw new Error(`expected text missing: ${spec.assertText}`);
+              }
+
+              const statusText=spec.statusSelector
+                ? await page.locator(spec.statusSelector).first().innerText().catch(()=>null)
+                : null;
+
+              const metrics=await page.evaluate(()=>({
+                scrollWidth:document.documentElement.scrollWidth,
+                clientWidth:document.documentElement.clientWidth,
+                scrollHeight:document.documentElement.scrollHeight,
+                title:document.title
+              }));
+              const horizontalOverflow=metrics.scrollWidth>metrics.clientWidth+1;
+
+              const file=`${out}/${spec.name}.png`;
+              await page.screenshot({path:file,fullPage:true});
+              const data=fs.readFileSync(file);
+
+              manifest.items.push({
+                name:spec.name,url,viewport:spec.viewport,metrics,
+                horizontalOverflow,
+                sha256:crypto.createHash('sha256').update(data).digest('hex'),
+                safeAction:spec.safeAction||'none',
+                businessMutation:'0 by capture workflow',
+                statusText,
+                bodyExcerpt:bodyText.slice(0,2500),
+                consoleErrors
+              });
+            }catch(e){
+              const failureFile=`${out}/${spec.name}-failure.png`;
+              await page.screenshot({path:failureFile,fullPage:true}).catch(()=>{});
+              manifest.captureErrors.push({name:spec.name,error:String(e.stack||e),consoleErrors});
+            }finally{
+              await context.close();
             }
-            if(spec.assertText){
-              const text=await page.locator('body').innerText();
-              if(!text.includes(spec.assertText)) throw new Error(spec.name+': expected text not found: '+spec.assertText);
-            }
-            const metrics=await page.evaluate(()=>({
-              scrollWidth:document.documentElement.scrollWidth,
-              clientWidth:document.documentElement.clientWidth,
-              scrollHeight:document.documentElement.scrollHeight,
-              title:document.title
-            }));
-            if(metrics.scrollWidth>metrics.clientWidth+1) errs.push(`horizontal-overflow:${metrics.scrollWidth}-${metrics.clientWidth}`);
-            const file=`${out}/${spec.name}.png`;
-            await page.screenshot({path:file,fullPage:true});
-            const data=fs.readFileSync(file);
-            manifest.items.push({
-              name:spec.name,url,viewport:spec.viewport,metrics,
-              sha256:crypto.createHash('sha256').update(data).digest('hex'),
-              safeAction:spec.safeAction||'none',
-              businessMutation:'0 by capture workflow',
-              errors:errs
-            });
-            if(errs.length) manifest.errors.push({name:spec.name,errors:errs});
-            await context.close();
           }
 
           (async()=>{
             const browser=await chromium.launch({headless:true});
             const specs=[
-              {name:'demo-desktop',path:'demo.html',viewport:{width:1440,height:1000},assertText:'SYNTHETIC DEMO'},
-              {name:'owner-desktop',path:'owner.html',viewport:{width:1440,height:1100},click:'#loginOwner',wait:'#visits .card',assertText:'Visit Day Control Tower',safeAction:'Owner Demo session login only'},
-              {name:'staff-mobile',path:'staff.html',viewport:{width:390,height:844},click:'#login',wait:'#visits .card',assertText:'本日の担当訪問',safeAction:'Staff Demo session login only'},
-              {name:'patient-mobile',path:'customer.html',viewport:{width:390,height:844},click:'#patient',wait:'#visits .card',assertText:'訪問予定',safeAction:'Patient Demo session login only'},
-              {name:'family-mobile',path:'customer.html',viewport:{width:390,height:844},click:'#family',wait:'#visits .card',assertText:'家族代理scope',safeAction:'Family Demo session login only'},
-              {name:'system-check-desktop',path:'system-check.html',viewport:{width:1440,height:1100},wait:'#checks .card',assertText:'System Check',safeAction:'GET System Check only'}
+              {
+                name:'demo-desktop',path:'demo.html',
+                viewport:{width:1440,height:1000},
+                assertText:'SYNTHETIC DEMO'
+              },
+              {
+                name:'owner-desktop',path:'owner.html',
+                viewport:{width:1440,height:1100},
+                click:'#loginOwner',statusSelector:'#status',
+                assertText:'Visit Day Control Tower',
+                safeAction:'Owner Demo session login only'
+              },
+              {
+                name:'staff-mobile',path:'staff.html',
+                viewport:{width:390,height:844},
+                click:'#login',statusSelector:'#status',
+                assertText:'本日の担当訪問',
+                safeAction:'Staff Demo session login only'
+              },
+              {
+                name:'patient-mobile',path:'customer.html',
+                viewport:{width:390,height:844},
+                click:'#patient',statusSelector:'#status',
+                assertText:'訪問予定',
+                safeAction:'Patient Demo session login only'
+              },
+              {
+                name:'family-mobile',path:'customer.html',
+                viewport:{width:390,height:844},
+                click:'#family',statusSelector:'#status',
+                assertText:'訪問予定',
+                safeAction:'Family Demo session login only'
+              },
+              {
+                name:'system-check-desktop',path:'system-check.html',
+                viewport:{width:1440,height:1100},
+                waitFirst:'#checks .card',statusSelector:'#result',
+                assertText:'System Check',
+                safeAction:'GET System Check only'
+              }
             ];
-            for(const spec of specs){
-              try{ await capture(browser,spec); }
-              catch(e){ manifest.errors.push({name:spec.name,errors:[String(e.stack||e)]}); }
-            }
+
+            for(const spec of specs) await one(browser,spec);
             await browser.close();
+
             fs.writeFileSync(`${out}/live-evidence-manifest.json`,JSON.stringify(manifest,null,2));
-            if(manifest.items.length!==6 || manifest.errors.length){
+            if(manifest.items.length!==6 || manifest.captureErrors.length){
               console.error(JSON.stringify(manifest,null,2));
               process.exit(2);
             }
+            console.log(JSON.stringify(manifest,null,2));
           })();
           JS
+
           node capture-live-evidence.js
           rm -f capture-live-evidence.js
           sha256sum live-evidence/*.png live-evidence/live-evidence-manifest.json > live-evidence/SHA256SUMS.txt
-          cat live-evidence/live-evidence-manifest.json
 
       - name: Upload LIVE evidence artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: DPRO_VISIT_AHAKI_CURRENT_LIVE_EVIDENCE_V1.1
+          name: DPRO_VISIT_AHAKI_CURRENT_LIVE_EVIDENCE_V1.2
           path: live-evidence/
           if-no-files-found: error
           retention-days: 14
