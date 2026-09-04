@@ -1,0 +1,13 @@
+{
+  "guide_start_resume_replay": true,
+  "guide_groups": true,
+  "guide_roles": true,
+  "guide_old_pdf_links_removed": true,
+  "tutorial_exact10": true,
+  "tutorial_state_key": true,
+  "tutorial_controls": true,
+  "tutorial_no_business_api": true,
+  "no_old_5step": true,
+  "no_internal_visible_labels": true,
+  "result": "PASS"
+}

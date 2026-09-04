@@ -1,1 +1,193 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ガイドセンター | DPRO 訪問マッサージ・鍼灸</title><link rel="stylesheet" href="styles.css"></head><body><header><div class="bar"><div class="brand">DPRO ガイドセンター</div><nav class="nav"><a href="demo.html">DEMO</a><a href="tutorial.html">Tutorial</a></nav></div></header><main><h1>操作に迷ったら、ここから。</h1><p class="lead">役割別の最短手順、詳細マニュアル、エラー時の戻り方をまとめています。</p><div class="grid"><section class="card"><h2>はじめて使う</h2><p>5ステップで日々の基本運用を体験します。</p><a href="tutorial.html"><button>Start / Resume</button></a></section><section class="card"><h2>Owner / Office</h2><p>今日の訪問、担当変更、家族連絡、Claim Readiness、Demo Reset。</p><a href="owner.html"><button>運営画面</button></a></section><section class="card"><h2>Staff</h2><p>担当訪問、到着、施術記録、完了。担当外の患者は表示しません。</p><a href="staff.html"><button>施術者画面</button></a></section><section class="card"><h2>Patient / Family</h2><p>訪問予定の確認と変更希望。家族は同意scopeの範囲のみ。</p><a href="customer.html"><button>患者・家族画面</button></a></section><section class="card"><h2>Quick Start PDF</h2><p>最初の1日で使う操作だけを短く確認。</p><a href="DPRO_VISIT_AHAKI_QUICK_START_V1.0_20260902.pdf"><button>PDFを開く</button></a></section><section class="card"><h2>詳細マニュアル</h2><p>初期設定、日次運用、例外対応、安全設定、トラブル対応。</p><a href="DPRO_VISIT_AHAKI_DETAILED_MANUAL_V1.0_20260902.pdf"><button>PDFを開く</button></a></section><section class="card"><h2>運用前チェック</h2><p>Ownerのみ。患者情報を表示せず、必要な安全設定を確認します。</p><a href="system-check.html"><button>一括チェック</button></a></section></div></main></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Guide Center | DPRO 訪問マッサージ・鍼灸</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root{--guide-deep:#0a211a;--guide-green:#118565;--guide-mint:#18c98a;--guide-soft:#f3f8f6;--guide-line:#d9e6e1;--guide-muted:#5f726b}
+    *{box-sizing:border-box}
+    body{margin:0;background:#fff;color:#10231d}
+    .guide-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}
+    .guide-hero{padding:54px 0 28px}
+    .guide-hero h1{font-size:clamp(34px,6vw,58px);line-height:1.12;margin:0 0 12px}
+    .guide-hero p{max-width:820px;color:var(--guide-muted);font-size:17px}
+    .guide-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+    .guide-action{display:flex;min-height:66px;align-items:center;justify-content:center;text-align:center;padding:12px 16px;border-radius:16px;text-decoration:none;font-weight:900;border:1px solid var(--guide-line);background:#fff;color:#10231d}
+    .guide-action.primary{background:var(--guide-mint);border-color:var(--guide-mint);color:#052018}
+    .guide-action:focus-visible,.guide-link:focus-visible{outline:3px solid #0c6;outline-offset:3px}
+    .guide-status{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--guide-soft);color:#36564b}
+    .guide-groups{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:20px 0 64px}
+    .guide-group{border:1px solid var(--guide-line);border-radius:20px;padding:22px;background:#fff}
+    .guide-group.wide{grid-column:1/-1}
+    .guide-group h2{margin:0 0 8px;font-size:24px}
+    .guide-group p{margin:0 0 12px;color:var(--guide-muted)}
+    .guide-list{margin:0;padding-left:20px;color:#29453c}
+    .guide-list li{margin:7px 0}
+    .guide-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .guide-link{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border-radius:12px;text-decoration:none;font-weight:800;background:#eef7f3;border:1px solid #cfe4dc}
+    .guide-link.secondary{background:#fff}
+    .guide-disabled{display:inline-flex;min-height:44px;align-items:center;padding:0 14px;border-radius:12px;background:#f0f2f1;color:#75817d;border:1px solid #dde2df;font-weight:800}
+    .first10-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+    .first10-item{border:1px solid var(--guide-line);border-radius:12px;padding:12px;background:#fbfdfc}
+    .first10-item b{display:block;color:var(--guide-green);font-size:12px;letter-spacing:.08em}
+    .safety{background:#eff9f5}
+    .trouble{background:#fffaf0}
+    .manual-note{padding:12px 14px;border-left:4px solid #c3902e;background:#fff8ea;color:#654d20}
+    @media(max-width:760px){
+      .guide-actions,.guide-groups,.first10-grid{grid-template-columns:1fr}
+      .guide-group.wide{grid-column:auto}
+    }
+    @media(max-width:430px){
+      .guide-shell{width:calc(100% - 24px)}
+      .guide-hero{padding-top:38px}
+      .guide-action{min-height:54px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">DPRO ガイドセンター</div>
+      <nav class="nav">
+        <a href="demo.html">DEMOへ戻る</a>
+        <a href="index.html">専用SYSTEM</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="guide-shell">
+    <section class="guide-hero">
+      <h1>操作に迷ったら、ここから。</h1>
+      <p>最初の10操作、役割別画面、安全ルール、運用前チェック、困ったときの戻り方をまとめています。公開Demoでは実在する患者・家族の情報を入力しません。</p>
+      <div class="guide-actions" aria-label="First10">
+        <a id="startFirst10" class="guide-action primary" href="tutorial.html?mode=start">First10を開始</a>
+        <a id="resumeFirst10" class="guide-action" href="tutorial.html?mode=resume">First10を再開</a>
+        <a id="replayFirst10" class="guide-action" href="tutorial.html?mode=replay">最初から再体験</a>
+      </div>
+      <div id="first10Status" class="guide-status" aria-live="polite">First10の進捗を確認しています。</div>
+    </section>
+
+    <div class="guide-groups">
+      <section class="guide-group wide" data-group="first10">
+        <h2>First10</h2>
+        <p>最初に覚える操作を、ちょうど10個に絞って確認します。案内だけでは保存・送信・承認・Demo Resetを実行しません。</p>
+        <div class="first10-grid">
+          <div class="first10-item"><b>01</b>公開Demoの安全ルール</div>
+          <div class="first10-item"><b>02</b>Owner / Officeの入口</div>
+          <div class="first10-item"><b>03</b>今日の訪問</div>
+          <div class="first10-item"><b>04</b>変更前の影響確認</div>
+          <div class="first10-item"><b>05</b>請求準備</div>
+          <div class="first10-item"><b>06</b>Staffの担当訪問</div>
+          <div class="first10-item"><b>07</b>患者本人の予定</div>
+          <div class="first10-item"><b>08</b>家族代理の表示範囲</div>
+          <div class="first10-item"><b>09</b>安全な家族連絡</div>
+          <div class="first10-item"><b>10</b>System Check</div>
+        </div>
+      </section>
+
+      <section class="guide-group" data-group="owner">
+        <h2>Owner / Office</h2>
+        <p>事務所で毎日確認する入口です。</p>
+        <ul class="guide-list">
+          <li>今日の訪問・未割当・未記録・未連絡</li>
+          <li>変更前の影響確認</li>
+          <li>今月の請求準備</li>
+          <li>健康情報を含めない安全な家族連絡</li>
+        </ul>
+        <div class="guide-links"><a class="guide-link" href="owner.html">Owner / Office画面</a></div>
+      </section>
+
+      <section class="guide-group" data-group="staff">
+        <h2>Staff</h2>
+        <p>施術者は自分に割り当てられた訪問だけを確認します。</p>
+        <ul class="guide-list">
+          <li>本日の担当訪問</li>
+          <li>到着・施術記録・完了</li>
+          <li>必要な訪問先情報の確認</li>
+        </ul>
+        <div class="guide-links"><a class="guide-link" href="staff.html">Staff画面</a></div>
+      </section>
+
+      <section class="guide-group" data-group="patient-family">
+        <h2>Patient / Family</h2>
+        <p>患者本人と家族代理を分け、必要な範囲だけを表示します。</p>
+        <ul class="guide-list">
+          <li>患者本人の訪問予定</li>
+          <li>家族代理は同意範囲を超える施術メモを見ない</li>
+          <li>変更希望は確定変更ではなく、運営側の確認待ち</li>
+        </ul>
+        <div class="guide-links"><a class="guide-link" href="customer.html">Patient / Family画面</a></div>
+      </section>
+
+      <section class="guide-group" data-group="system-check">
+        <h2>System Check</h2>
+        <p>Ownerが運用前に、安全設定と環境状態を一括確認します。</p>
+        <div class="guide-links"><a class="guide-link" href="system-check.html">System Checkを開く</a></div>
+      </section>
+
+      <section class="guide-group safety" data-group="safety">
+        <h2>安全に使うために</h2>
+        <ul class="guide-list">
+          <li>公開Demoに実在する患者・家族の氏名、住所、電話番号、健康情報を入力しない</li>
+          <li>First10は業務状態を自動変更しない</li>
+          <li>家族代理には同意範囲を超える施術メモを表示しない</li>
+          <li>健康情報を含む内容をLINEへ送らない</li>
+          <li>SecretやTokenを公開画面・PDFへ記載しない</li>
+        </ul>
+      </section>
+
+      <section class="guide-group" data-group="accessibility">
+        <h2>キーボード・タッチ操作</h2>
+        <ul class="guide-list">
+          <li>Tabで操作項目を移動</li>
+          <li>Enter / Spaceでボタンやリンクを操作</li>
+          <li>EscでFirst10を閉じてGuide Centerへ戻る</li>
+          <li>マウス・タッチでも同じ操作が可能</li>
+        </ul>
+      </section>
+
+      <section class="guide-group trouble" data-group="trouble">
+        <h2>困ったとき・戻り方</h2>
+        <ul class="guide-list">
+          <li>途中で閉じても、First10の進捗だけを保存</li>
+          <li>Resumeで同じ続きから再開</li>
+          <li>ReplayでStep 1から再体験</li>
+          <li>First10をやり直しても業務データは削除しない</li>
+          <li>画面の状態確認はSystem Checkへ戻る</li>
+        </ul>
+        <div class="guide-links">
+          <a class="guide-link secondary" href="demo.html">DEMOへ戻る</a>
+          <a class="guide-link secondary" href="system-check.html">System Check</a>
+        </div>
+      </section>
+
+      <section class="guide-group wide" data-group="manuals">
+        <h2>保存版PDF</h2>
+        <p>Quick Startと詳細操作マニュアルは、現在の操作内容に合わせて更新中です。</p>
+        <div class="manual-note">新しい保存版PDFの準備が完了後、このGuide Centerから確認できるようになります。</div>
+        <div class="guide-links">
+          <span class="guide-disabled" aria-disabled="true">Quick Start 更新準備中</span>
+          <span class="guide-disabled" aria-disabled="true">詳細マニュアル 更新準備中</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const KEY = 'dpro_visit_ahaki_first10_v11';
+      const out = document.querySelector('#first10Status');
+      try {
+        const state = JSON.parse(localStorage.getItem(KEY) || 'null');
+        if (!state) out.textContent = '未開始です。StartでStep 1から始めます。';
+        else if (state.completed) out.textContent = 'First10は完了済みです。Replayで最初から再体験できます。';
+        else out.textContent = `進捗: Step ${Math.min(10, Number(state.current || 0) + 1)} / 10。Resumeで続きから再開できます。`;
+      } catch {
+        out.textContent = '進捗を読み込めませんでした。StartでStep 1から始められます。';
+      }
+    })();
+  </script>
+</body>
+</html>

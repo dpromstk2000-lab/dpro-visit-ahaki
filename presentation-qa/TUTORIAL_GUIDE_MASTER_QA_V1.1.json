@@ -1,0 +1,41 @@
+{
+  "master": "CENTRAL PRESENTATION / TUTORIAL MASTER V1.2",
+  "tutorial_standard": "First10 exactly 10",
+  "guide_center": {
+    "Start": true,
+    "Resume": true,
+    "Replay": true,
+    "Owner_Office": true,
+    "Staff": true,
+    "Patient_Family": true,
+    "System_Check": true,
+    "Safety": true,
+    "Accessibility_Keyboard": true,
+    "Trouble_Recovery": true,
+    "manual_links": "HOLD until rebuilt PDFs replace old non-final files",
+    "public_internal_labels": 0
+  },
+  "tutorial": {
+    "steps": 10,
+    "Start_Resume_Replay": true,
+    "Back_Next_Skip_Close_Esc": true,
+    "touch_mouse_keyboard": true,
+    "business_mutation": 0,
+    "storage_key": "dpro_visit_ahaki_first10_v11"
+  },
+  "responsive_widths": [
+    375,
+    390,
+    430,
+    768,
+    1280,
+    1440
+  ],
+  "frozen_scope": "PASS",
+  "result": "GREEN_WITH_MANUAL_LINK_HOLD",
+  "complete_final_lock": "HOLD",
+  "sha256": {
+    "guide.html": "8be516c6d5aaa9043bdf876a4dcb7859e743b147a707f0ae3490d9907b9e5d43",
+    "tutorial.html": "f0626f0ba5fbe79e9519523b2255402c3771dd9e73133c19fd675aa5d911f7f6"
+  }
+}

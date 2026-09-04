@@ -1,0 +1,115 @@
+{
+  "responsive": [
+    {
+      "page": "guide.html",
+      "width": 375,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 375,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    },
+    {
+      "page": "guide.html",
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    },
+    {
+      "page": "guide.html",
+      "width": 430,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 430,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    },
+    {
+      "page": "guide.html",
+      "width": 768,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 768,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    },
+    {
+      "page": "guide.html",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    },
+    {
+      "page": "guide.html",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "minButtonHeight": 44,
+      "result": "PASS"
+    },
+    {
+      "page": "tutorial.html?mode=start",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "minButtonHeight": 46,
+      "result": "PASS"
+    }
+  ],
+  "stateFlow": {
+    "Start": "PASS",
+    "Resume": "PASS",
+    "Replay": "PASS",
+    "Back": "PASS",
+    "Skip": "PASS",
+    "Close": "PASS",
+    "Esc": "PASS",
+    "Touch": "PASS",
+    "KeyboardFocus": "PASS",
+    "Complete10": "PASS",
+    "businessMutationRequests": 0
+  },
+  "requests": [],
+  "result": "GREEN"
+}

@@ -1,3 +1,193 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>はじめてガイド | DPRO 訪問マッサージ・鍼灸</title><link rel="stylesheet" href="styles.css"></head><body><header><div class="bar"><div class="brand">はじめてガイド</div><nav class="nav"><a href="guide.html">ガイドセンター</a><a href="owner.html">運営画面</a></nav></div></header><main><h1>最初の5ステップ</h1><p class="lead">本番患者ではなく、まずDemoの合成データで操作の流れを確認します。</p><div id="progress" class="notice">0 / 5 完了</div><div class="grid" id="steps"></div><div class="actions"><button id="resume">次の未完了へ</button><button class="secondary" id="replay">最初からやり直す</button></div></main><script>
-const steps=[['1','今日の訪問を見る','Owner画面で、未記録・未連絡・Claim blockerを確認します。','owner.html'],['2','施術者の担当を見る','Staff画面では自分に割り当てられた訪問だけが表示されます。','staff.html'],['3','変更Impactを確認','継続予定を変更する前に、担当衝突・施設人数区分・通知・請求準備への影響を確認します。','owner.html'],['4','患者・家族画面を見る','患者本人と家族代理で見える範囲が違うことを確認します。','customer.html'],['5','System Checkを確認','運用前に安全設定と環境状態を一括確認します。','system-check.html']];let done=JSON.parse(localStorage.getItem('dpro_ahaki_tutorial')||'[]');function render(){document.querySelector('#progress').textContent=`${done.length} / ${steps.length} 完了`;document.querySelector('#steps').innerHTML=steps.map(([n,t,d,u],i)=>`<section class="card ${done.includes(i)?'ok':''}"><div class="muted">STEP ${n}</div><h2>${t}</h2><p>${d}</p><div class="actions"><a href="${u}"><button class="secondary">画面を開く</button></a><button onclick="mark(${i})">${done.includes(i)?'完了済み':'完了にする'}</button></div></section>`).join('')}function mark(i){if(!done.includes(i))done.push(i);localStorage.setItem('dpro_ahaki_tutorial',JSON.stringify(done));render()}document.querySelector('#resume').onclick=()=>{const i=steps.findIndex((_,i)=>!done.includes(i));if(i<0)return;location.href=steps[i][3]};document.querySelector('#replay').onclick=()=>{done=[];localStorage.removeItem('dpro_ahaki_tutorial');render()};render();
-</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>First10 | DPRO 訪問マッサージ・鍼灸</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root{--t-deep:#0a211a;--t-green:#118565;--t-mint:#18c98a;--t-soft:#f3f8f6;--t-line:#d9e6e1;--t-muted:#5f726b}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f7faf8;color:#10231d}
+    .t-shell{width:min(880px,calc(100% - 32px));margin:0 auto;padding:48px 0 72px}
+    .t-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:20px}
+    .t-kicker{font-size:12px;font-weight:900;letter-spacing:.12em;color:var(--t-green)}
+    .t-progress-text{font-weight:900}
+    .t-progress{height:10px;background:#dfeae5;border-radius:999px;overflow:hidden;margin:10px 0 28px}
+    .t-progress>span{display:block;height:100%;background:var(--t-mint);width:10%;transition:width .2s ease}
+    .t-card{background:#fff;border:1px solid var(--t-line);border-radius:24px;padding:28px;box-shadow:0 12px 30px #0d2e2310}
+    .t-step-no{font-size:13px;font-weight:900;color:var(--t-green);letter-spacing:.1em}
+    .t-card h1{font-size:clamp(30px,6vw,48px);line-height:1.18;margin:8px 0 14px}
+    .t-role{display:inline-flex;min-height:34px;align-items:center;padding:0 12px;border-radius:999px;background:#edf7f3;color:#2d5a4a;font-weight:800;font-size:13px}
+    .t-body{font-size:17px;color:#38544b;margin:18px 0}
+    .t-safe{padding:14px 16px;border-left:4px solid var(--t-green);background:#eff9f5;color:#34584b;margin:18px 0}
+    .t-screen-link{display:inline-flex;min-height:46px;align-items:center;padding:0 16px;border-radius:12px;text-decoration:none;font-weight:900;background:#eef7f3;border:1px solid #cfe4dc}
+    .t-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+    .t-btn{min-height:48px;border:1px solid var(--t-line);border-radius:12px;background:#fff;color:#10231d;font:inherit;font-weight:900;cursor:pointer}
+    .t-btn.primary{background:var(--t-mint);border-color:var(--t-mint);color:#052018}
+    .t-btn:disabled{opacity:.45;cursor:not-allowed}
+    .t-btn:focus-visible,.t-screen-link:focus-visible{outline:3px solid #0c6;outline-offset:3px}
+    .t-help{margin-top:18px;color:var(--t-muted);font-size:14px}
+    .t-complete{text-align:center}
+    .t-complete h1{margin-top:8px}
+    .t-complete-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .t-complete-actions a{display:inline-flex;min-height:48px;align-items:center;padding:0 18px;border-radius:12px;text-decoration:none;font-weight:900;border:1px solid var(--t-line);background:#fff}
+    .t-complete-actions a.primary{background:var(--t-mint);border-color:var(--t-mint)}
+    @media(max-width:620px){
+      .t-shell{width:calc(100% - 24px);padding-top:30px}
+      .t-card{padding:20px}
+      .t-controls{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">DPRO First10</div>
+      <nav class="nav"><a href="guide.html">Guide Center</a></nav>
+    </div>
+  </header>
+
+  <main class="t-shell">
+    <div class="t-top">
+      <div>
+        <div class="t-kicker">VISIT MASSAGE / ACUPUNCTURE</div>
+        <div id="progressText" class="t-progress-text">Step 1 / 10</div>
+      </div>
+      <button id="closeTop" class="t-btn" type="button">閉じる</button>
+    </div>
+    <div class="t-progress" aria-hidden="true"><span id="progressBar"></span></div>
+    <section id="tutorialCard" class="t-card" aria-live="polite"></section>
+    <p class="t-help">Back / Next / Skip / Close を使えます。Escでも閉じられます。First10の操作だけでは、保存・送信・承認・Demo Resetを実行しません。</p>
+  </main>
+
+  <script>
+    (() => {
+      const KEY = 'dpro_visit_ahaki_first10_v11';
+      const STEPS = [
+        {title:'公開Demoの安全ルール',role:'共通',url:'demo.html',body:'最初に、公開Demoが合成データを使う確認環境であることを確認します。実在する患者・家族の情報は入力しません。',safe:'このStepではDemo Resetや業務保存を実行しません。'},
+        {title:'Owner / Officeの入口',role:'Owner / Office',url:'owner.html',body:'Owner / Office画面の入口と「今日の訪問」を確認します。役割の開始操作は、画面を開いたあと利用者自身が行います。',safe:'First10から自動ログインしません。'},
+        {title:'今日の訪問を確認',role:'Owner / Office',url:'owner.html',body:'未割当・未記録・未連絡・請求準備を、訪問単位で確認する画面だと理解します。',safe:'First10は訪問の状態を変更しません。'},
+        {title:'変更前の影響を確認',role:'Owner',url:'owner.html',body:'継続予定を変更する前に、担当衝突・施設人数区分・通知・請求準備への影響を確認する入口を見ます。',safe:'変更の確定はFirst10から実行しません。'},
+        {title:'請求準備の入口を確認',role:'Owner / Office',url:'owner.html',body:'今月の請求準備状況を確認する入口を把握します。',safe:'請求処理や確定操作をFirst10から実行しません。'},
+        {title:'Staffの担当訪問を確認',role:'Staff',url:'staff.html',body:'Staff画面では、自分に割り当てられた訪問だけを確認する役割境界を見ます。',safe:'到着・記録・完了をFirst10が自動で押すことはありません。'},
+        {title:'患者本人の予定を確認',role:'Patient',url:'customer.html',body:'患者本人の訪問予定画面を確認します。',safe:'変更希望の送信をFirst10から実行しません。'},
+        {title:'家族代理の表示範囲を確認',role:'Family',url:'customer.html',body:'家族代理は患者本人とは別に扱い、同意範囲を超える施術メモを見ないことを確認します。変更希望は運営側の確認待ちです。',safe:'First10から変更希望を送信しません。'},
+        {title:'安全な家族連絡を確認',role:'Owner / Office',url:'owner.html',body:'健康情報を含めない承認済み通知の入口を確認します。',safe:'First10からLINE通知を送信しません。'},
+        {title:'System Checkを確認',role:'Owner',url:'system-check.html',body:'患者情報やSecretを表示せず、運用前の安全設定と環境状態を確認する画面へ戻れることを確認します。',safe:'ここまでのFirst10は業務データを変更せず完了します。'}
+      ];
+
+      const card = document.querySelector('#tutorialCard');
+      const progressText = document.querySelector('#progressText');
+      const progressBar = document.querySelector('#progressBar');
+      const closeTop = document.querySelector('#closeTop');
+
+      function fresh(){
+        return {current:0,completed:false,skipped:[],updatedAt:new Date().toISOString()};
+      }
+      function read(){
+        try{
+          const v = JSON.parse(localStorage.getItem(KEY) || 'null');
+          if (!v || typeof v.current !== 'number') return null;
+          v.current = Math.max(0,Math.min(STEPS.length-1,v.current));
+          v.skipped = Array.isArray(v.skipped) ? v.skipped : [];
+          return v;
+        }catch{return null}
+      }
+      function save(state){
+        state.updatedAt = new Date().toISOString();
+        localStorage.setItem(KEY,JSON.stringify(state));
+      }
+
+      const mode = new URLSearchParams(location.search).get('mode');
+      let state;
+      if(mode === 'start' || mode === 'replay'){
+        state = fresh();
+        save(state);
+      }else{
+        state = read() || fresh();
+        save(state);
+      }
+
+      function closeTutorial(){
+        save(state);
+        location.href = 'guide.html';
+      }
+      function move(delta){
+        state.completed = false;
+        state.current = Math.max(0,Math.min(STEPS.length-1,state.current + delta));
+        save(state);
+        render();
+      }
+      function next(){
+        if(state.current >= STEPS.length - 1){
+          state.completed = true;
+          save(state);
+          render();
+        }else{
+          state.current += 1;
+          save(state);
+          render();
+        }
+      }
+      function skip(){
+        if(!state.skipped.includes(state.current)) state.skipped.push(state.current);
+        next();
+      }
+      function replay(){
+        state = fresh();
+        save(state);
+        render();
+      }
+
+      function render(){
+        if(state.completed){
+          progressText.textContent = '10 / 10 完了';
+          progressBar.style.width = '100%';
+          card.innerHTML = `
+            <div class="t-complete">
+              <div class="t-step-no">COMPLETE</div>
+              <h1>First10が完了しました。</h1>
+              <p class="t-body">役割別の入口、安全ルール、System Checkまで確認できました。実際の業務操作は各画面で必要なときだけ行います。</p>
+              <div class="t-complete-actions">
+                <a class="primary" href="guide.html">Guide Centerへ戻る</a>
+                <a href="tutorial.html?mode=replay">最初から再体験</a>
+              </div>
+            </div>`;
+          return;
+        }
+
+        const step = STEPS[state.current];
+        progressText.textContent = `Step ${state.current + 1} / ${STEPS.length}`;
+        progressBar.style.width = `${((state.current + 1) / STEPS.length) * 100}%`;
+        card.innerHTML = `
+          <div class="t-step-no">STEP ${String(state.current + 1).padStart(2,'0')} / 10</div>
+          <h1>${step.title}</h1>
+          <span class="t-role">${step.role}</span>
+          <p class="t-body">${step.body}</p>
+          <div class="t-safe">${step.safe}</div>
+          <a class="t-screen-link" href="${step.url}" target="_blank" rel="noopener">現在の画面を別タブで確認</a>
+          <div class="t-controls">
+            <button id="back" class="t-btn" type="button" ${state.current===0?'disabled':''}>Back</button>
+            <button id="next" class="t-btn primary" type="button">${state.current===STEPS.length-1?'完了':'Next'}</button>
+            <button id="skip" class="t-btn" type="button">Skip</button>
+            <button id="close" class="t-btn" type="button">Close</button>
+          </div>`;
+        document.querySelector('#back').onclick = () => move(-1);
+        document.querySelector('#next').onclick = next;
+        document.querySelector('#skip').onclick = skip;
+        document.querySelector('#close').onclick = closeTutorial;
+      }
+
+      closeTop.onclick = closeTutorial;
+      document.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape'){
+          e.preventDefault();
+          closeTutorial();
+        }
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
