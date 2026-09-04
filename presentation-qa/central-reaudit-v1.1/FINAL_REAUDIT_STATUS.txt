@@ -1,0 +1,3 @@
+DPRO #52 VISIT AHAKI CENTRAL RE-AUDIT: FAIL
+Missing/empty fresh evidence: BROWSER_REAUDIT.json, PDF_REAUDIT.json, MANUAL_HTML_REAUDIT.json, lp-375.png, lp-390.png, lp-430.png, lp-768.png, lp-1280.png, lp-1440.png, guide-390.png, guide-1440.png, tutorial-start-390.png, tutorial-start-1440.png, quick-manual-html.png, detailed-manual-html.png, A4_QR_DECODED.txt
+STATIC_REAUDIT.json: failed=['lp_owner_send_safety']
