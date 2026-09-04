@@ -1,0 +1,682 @@
+{
+  "master": "DPRO-LP-MASTER-V1.4",
+  "repair": "controlled hero line breaks + non-orphan monthly price typography",
+  "widths": [
+    375,
+    390,
+    430,
+    768,
+    1280,
+    1440
+  ],
+  "checks": "P1-P10 / overflow0 / hero exactly 3 unwrapped lines / price unwrapped / controls >=44 / console0",
+  "results": [
+    {
+      "width": 375,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 148,
+              "width": 213.6875,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 149,
+            "width": 339,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 182.546875,
+              "width": 338.640625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 183.546875,
+            "width": 339,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 18,
+              "y": 217.09375,
+              "width": 304.40625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 218.09375,
+            "width": 339,
+            "height": 34.546875
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 46,
+            "y": 7389.453125,
+            "width": 181.234375,
+            "height": 38
+          }
+        ],
+        "box": {
+          "x": 46,
+          "y": 7379.453125,
+          "width": 181.234375,
+          "height": 59.5
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 234.703125,
+            "y": 7407.453125,
+            "width": 56,
+            "height": 16
+          }
+        ],
+        "box": {
+          "x": 234.703125,
+          "y": 7403.453125,
+          "width": 56,
+          "height": 24.984375
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 283,
+        "clientWidth": 283
+      },
+      "minControlHeight": 45.5,
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 148,
+              "width": 213.6875,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 149,
+            "width": 354,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 182.546875,
+              "width": 338.640625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 183.546875,
+            "width": 354,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 18,
+              "y": 217.09375,
+              "width": 304.40625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 218.09375,
+            "width": 354,
+            "height": 34.546875
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 46,
+            "y": 7298.90625,
+            "width": 181.234375,
+            "height": 38
+          }
+        ],
+        "box": {
+          "x": 46,
+          "y": 7288.90625,
+          "width": 181.234375,
+          "height": 59.5
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 234.703125,
+            "y": 7316.90625,
+            "width": 56,
+            "height": 16
+          }
+        ],
+        "box": {
+          "x": 234.703125,
+          "y": 7312.90625,
+          "width": 56,
+          "height": 24.984375
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 298,
+        "clientWidth": 298
+      },
+      "minControlHeight": 45.5,
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "width": 430,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 148,
+              "width": 213.6875,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 149,
+            "width": 394,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 18,
+              "y": 182.546875,
+              "width": 338.640625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 183.546875,
+            "width": 394,
+            "height": 34.546875
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 18,
+              "y": 217.09375,
+              "width": 304.40625,
+              "height": 36
+            }
+          ],
+          "box": {
+            "x": 18,
+            "y": 218.09375,
+            "width": 394,
+            "height": 34.546875
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 46,
+            "y": 7105.109375,
+            "width": 181.234375,
+            "height": 38
+          }
+        ],
+        "box": {
+          "x": 46,
+          "y": 7095.109375,
+          "width": 181.234375,
+          "height": 59.5
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 234.703125,
+            "y": 7123.109375,
+            "width": 56,
+            "height": 16
+          }
+        ],
+        "box": {
+          "x": 234.703125,
+          "y": 7119.109375,
+          "width": 56,
+          "height": 24.984375
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 338,
+        "clientWidth": 338
+      },
+      "minControlHeight": 44,
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 24,
+              "y": 154,
+              "width": 279.84375,
+              "height": 47
+            }
+          ],
+          "box": {
+            "x": 24,
+            "y": 155,
+            "width": 720,
+            "height": 45.359375
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 24,
+              "y": 199.359375,
+              "width": 442.59375,
+              "height": 47
+            }
+          ],
+          "box": {
+            "x": 24,
+            "y": 200.359375,
+            "width": 720,
+            "height": 45.359375
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 24,
+              "y": 244.71875,
+              "width": 398.90625,
+              "height": 47
+            }
+          ],
+          "box": {
+            "x": 24,
+            "y": 245.71875,
+            "width": 720,
+            "height": 45.359375
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 50,
+            "y": 6247.046875,
+            "width": 191.890625,
+            "height": 41
+          }
+        ],
+        "box": {
+          "x": 50,
+          "y": 6236.046875,
+          "width": 191.890625,
+          "height": 63
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 249.796875,
+            "y": 6266.046875,
+            "width": 60,
+            "height": 17
+          }
+        ],
+        "box": {
+          "x": 249.796875,
+          "y": 6262.046875,
+          "width": 60,
+          "height": 26.46875
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 668,
+        "clientWidth": 668
+      },
+      "minControlHeight": 44,
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "width": 1280,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 80,
+              "y": 180,
+              "width": 359.3125,
+              "height": 60
+            }
+          ],
+          "box": {
+            "x": 80,
+            "y": 181,
+            "width": 602,
+            "height": 58.0625
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 80,
+              "y": 238.0625,
+              "width": 567.484375,
+              "height": 60
+            }
+          ],
+          "box": {
+            "x": 80,
+            "y": 239.0625,
+            "width": 602,
+            "height": 58.0625
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 80,
+              "y": 296.125,
+              "width": 512.4375,
+              "height": 60
+            }
+          ],
+          "box": {
+            "x": 80,
+            "y": 297.125,
+            "width": 602,
+            "height": 58.0625
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 114,
+            "y": 4668.75,
+            "width": 287.84375,
+            "height": 60
+          }
+        ],
+        "box": {
+          "x": 114,
+          "y": 4651.75,
+          "width": 287.84375,
+          "height": 94.5
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 413.71875,
+            "y": 4696.75,
+            "width": 92,
+            "height": 26
+          }
+        ],
+        "box": {
+          "x": 413.71875,
+          "y": 4690.75,
+          "width": 92,
+          "height": 39.703125
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 591,
+        "clientWidth": 591
+      },
+      "minControlHeight": 44,
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hero": [
+        {
+          "text": "今日の訪問を、",
+          "rects": [
+            {
+              "x": 160,
+              "y": 179,
+              "width": 398.90625,
+              "height": 67
+            }
+          ],
+          "box": {
+            "x": 160,
+            "y": 181,
+            "width": 629.703125,
+            "height": 64.796875
+          }
+        },
+        {
+          "text": "「誰が・どこへ」から、",
+          "rects": [
+            {
+              "x": 160,
+              "y": 243.796875,
+              "width": 629.703125,
+              "height": 67
+            }
+          ],
+          "box": {
+            "x": 160,
+            "y": 245.796875,
+            "width": 629.703125,
+            "height": 64.796875
+          }
+        },
+        {
+          "text": "記録・家族連絡まで。",
+          "rects": [
+            {
+              "x": 160,
+              "y": 308.59375,
+              "width": 569.015625,
+              "height": 67
+            }
+          ],
+          "box": {
+            "x": 160,
+            "y": 310.59375,
+            "width": 629.703125,
+            "height": 64.796875
+          }
+        }
+      ],
+      "priceMain": {
+        "text": "月額 5,500円",
+        "rects": [
+          {
+            "x": 194,
+            "y": 4668.75,
+            "width": 287.84375,
+            "height": 60
+          }
+        ],
+        "box": {
+          "x": 194,
+          "y": 4651.75,
+          "width": 287.84375,
+          "height": 94.5
+        }
+      },
+      "priceTax": {
+        "text": "（税込）",
+        "rects": [
+          {
+            "x": 493.71875,
+            "y": 4696.75,
+            "width": 92,
+            "height": 26
+          }
+        ],
+        "box": {
+          "x": 493.71875,
+          "y": 4690.75,
+          "width": 92,
+          "height": 39.703125
+        }
+      },
+      "priceBox": {
+        "scrollWidth": 591,
+        "clientWidth": 591
+      },
+      "minControlHeight": 44,
+      "errors": [],
+      "result": "PASS"
+    }
+  ],
+  "result": "GREEN"
+}

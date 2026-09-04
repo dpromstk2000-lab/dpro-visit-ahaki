@@ -32,7 +32,8 @@
     .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;min-height:680px}
     .hero-copy{padding:82px 54px 76px max(32px,calc((100vw - 1120px)/2))}
     .hero .kicker{color:#76e7be}
-    h1{font-size:clamp(44px,6.5vw,78px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}
+    h1{font-size:clamp(42px,4.2vw,60px);line-height:1.08;letter-spacing:-.055em;margin:14px 0 24px}
+    .hero-line{display:block;white-space:nowrap}
     .hero-lead{font-size:clamp(17px,2vw,21px);color:#d5e4de;max-width:720px}
     .hero-photo{position:relative;min-height:520px;overflow:hidden}
     .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center}
@@ -76,7 +77,8 @@
     .ba h3{font-size:26px;margin:0 0 16px}
     .ba ul{padding-left:20px}
     .pricebox{background:#0d332a;color:#fff;border-radius:26px;padding:34px;margin-top:28px;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}
-    .pricebox .big{font-size:clamp(38px,6vw,66px);font-weight:950;color:#70e9bb;letter-spacing:-.05em}
+    .pricebox .big{font-size:clamp(36px,4.4vw,54px);font-weight:950;color:#70e9bb;letter-spacing:-.05em;display:flex;align-items:baseline;gap:.22em;white-space:nowrap}
+    .price-main,.price-tax{white-space:nowrap}.price-tax{font-size:.42em;letter-spacing:0}
     .breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
     .breakdown div{border:1px solid #ffffff2e;border-radius:12px;padding:12px;font-size:13px}
     .guard{background:#fff7e8;color:#5d4729;border:1px solid #ead6aa;border-radius:14px;padding:14px;font-size:13px}
@@ -110,6 +112,8 @@
       .wrap{width:min(100% - 24px,1120px)}
       .cards,.six,.breakdown{grid-template-columns:1fr}
       .hero-copy,.consult-copy{padding-left:18px;padding-right:18px}
+      h1{font-size:32px}
+      .pricebox .big{font-size:34px}
       .btn{width:100%}
       .topbar .wrap{min-height:58px}
     }
@@ -134,7 +138,7 @@
       <div class="hero-grid">
         <div class="hero-copy">
           <div class="kicker">P1 / VISIT MASSAGE & ACUPUNCTURE</div>
-          <h1>「今日、誰が、どこへ行くか」から、<br>記録・家族連絡まで。</h1>
+          <h1><span class="hero-line">今日の訪問を、</span><span class="hero-line">「誰が・どこへ」から、</span><span class="hero-line">記録・家族連絡まで。</span></h1>
           <p class="hero-lead">訪問予定、担当、到着、施術記録、家族連絡、変更前のImpact確認。予定表の外に散らばりやすい毎日の確認を、役割別のDPROでつなぎます。</p>
           <div class="actions">
             <a class="btn primary" href="https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html" target="_blank" rel="noopener">LIVE DEMO</a>
@@ -250,7 +254,7 @@
         <div class="pricebox">
           <div>
             <div>DPRO SHOP MONTHLY OPERATION</div>
-            <div class="big">月額 5,500円（税込）</div>
+            <div class="big"><span class="price-main">月額 5,500円</span><span class="price-tax">（税込）</span></div>
             <div class="breakdown">
               <div>LINE公式運用<br><strong>3,300円</strong></div>
               <div>ホームページ運用<br><strong>1,100円</strong></div>
