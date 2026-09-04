@@ -1,0 +1,147 @@
+{
+  "quick": [
+    {
+      "page": 1,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html",
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html",
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 2,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 3,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html",
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "detailed": [
+    {
+      "page": 1,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 2,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 3,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 4,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 5,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 6,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 7,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 8,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 9,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html"
+      ],
+      "result": "PASS"
+    },
+    {
+      "page": 10,
+      "decoded": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html"
+      ],
+      "expected": [
+        "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "summary": {
+    "quick_pages": "3/3",
+    "quick_qr_instances": "5/5",
+    "detailed_pages": "10/10",
+    "detailed_qr_instances": "10/10",
+    "result": "PASS"
+  }
+}

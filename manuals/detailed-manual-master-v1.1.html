@@ -1,0 +1,328 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><style>
+@page{size:A4 portrait;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#fff;color:#10231d;font-family:"Noto Sans JP","IPA Gothic","Yu Gothic",sans-serif}
+.page{width:210mm;height:297mm;padding:14mm 14mm 13mm;page-break-after:always;break-after:page;position:relative;overflow:hidden;background:#fff}
+.page:last-child{page-break-after:auto;break-after:auto}
+.eyebrow{font-size:9.5pt;font-weight:900;letter-spacing:.08em;color:#118565;margin-bottom:4mm}
+.master-badge{display:inline-block;background:#e9f7f1;color:#09684f;padding:1.6mm 3mm;border-radius:99px;font-size:8pt;font-weight:900;margin-bottom:5mm}
+h1{font-size:26pt;line-height:1.18;letter-spacing:-.03em;margin:0 0 4mm}
+h2{font-size:19pt;line-height:1.25;margin:0 0 3.5mm}
+h3{font-size:13.5pt;line-height:1.3;margin:0 0 2mm}
+p{font-size:10pt;line-height:1.65;margin:0}
+.lead{font-size:11.2pt;color:#526a61;max-width:172mm}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+.card{border:1px solid #d8e5e0;border-radius:4mm;padding:4mm;background:#fff}
+.soft{background:#f3f8f6}
+.deep{background:#0b4e3e;color:#fff;border-color:#0b4e3e}
+.deep p,.deep li{color:#e8f5f0}
+.callout{border-left:4px solid #118565;background:#eef8f4;padding:3.5mm 4mm;border-radius:0 3mm 3mm 0}
+.warn{border-left-color:#b7832d;background:#fff8e9}
+ul,ol{margin:2mm 0 0;padding-left:5mm}
+li{font-size:9.6pt;line-height:1.55;margin:1.2mm 0}
+.steps{display:grid;grid-template-columns:1fr;gap:1.5mm}
+.step{display:grid;grid-template-columns:9mm 1fr;gap:3mm;align-items:start;padding:2.2mm 0;border-bottom:1px solid #e5edea}
+.step:last-child{border-bottom:0}
+.n{font-weight:950;color:#118565;font-size:10pt}
+.screen{border:1px solid #d8e5e0;border-radius:3mm;padding:2mm;background:#fdfefe}
+.screen img{width:100%;max-height:92mm;object-fit:contain;display:block}
+.phone img{max-height:105mm}
+.qrbox{display:flex;align-items:center;gap:4mm}
+.qrbox img{width:27mm;height:27mm;image-rendering:pixelated}
+.qrtext{font-size:7.4pt;color:#526a61;word-break:break-all;line-height:1.35}
+.role{min-height:33mm}
+.role b{display:block;font-size:12pt;margin-bottom:2mm}
+.footer{position:absolute;left:14mm;right:14mm;bottom:7mm;display:flex;justify-content:space-between;border-top:1px solid #dfe8e4;padding-top:2mm;color:#6a7b74;font-size:7.5pt}
+.tag{font-size:8pt;color:#118565;font-weight:900;letter-spacing:.06em}
+.flow{display:flex;align-items:center;justify-content:space-between;gap:2mm;margin-top:3mm}
+.flow span{flex:1;border:1px solid #d5e5df;border-radius:3mm;padding:3mm;text-align:center;font-size:9pt;font-weight:800;background:#f8fbfa}
+.flow i{font-style:normal;color:#118565;font-weight:900}
+.check{display:grid;grid-template-columns:repeat(2,1fr);gap:2mm 6mm}
+.check div{font-size:9.2pt;line-height:1.5}
+.tiny{font-size:8.2pt;color:#60736b}
+</style></head><body>
+<section class="page">
+  <div class="eyebrow">DPRO LINE SYSTEMS / DPRO 訪問マッサージ・鍼灸</div>
+  <div class="master-badge">DETAILED MANUAL MASTER V1.1</div>
+  <h1>保存版 操作マニュアル</h1>
+  <p class="lead">Owner / Office・Staff・Patient / Familyが、導入後に自分で操作場所と安全な運用を確認できるDPRO標準の保存版です。</p>
+  <div class="grid2" style="margin-top:7mm">
+    <div class="card">
+      <h2>Guide Center</h2>
+      <p>First10のStart / Resume / Replay、役割別入口、System Check、Safety、Trouble Recovery、Manualsをまとめています。</p>
+      <div class="qrbox" style="margin-top:5mm"><img src="assets/qr-guide.png"><div><b>Guide Center</b><div class="qrtext">guide.html</div></div></div>
+    </div>
+    <div>
+      <h2>現在のGuide Center</h2>
+      <div class="screen phone"><img src="../presentation-qa/manuals-v1.1/guide-live-390.png"></div>
+    </div>
+  </div>
+  <div class="card deep" style="margin-top:6mm"><h3>このマニュアルの境界</h3><p>公開Demoへ実在する患者・家族の情報を入力しません。実tenant / Owner Auth / 顧客Auth / 契約者固有LINE資格情報 / Production切替は正式契約後のREADY工程です。</p></div>
+  <div class="footer"><span>Detailed Manual 1/10</span><span>Guide Center / Start</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / First10</div>
+  <h1>First10 - exactly 10</h1>
+  <div class="grid2" style="margin-top:5mm">
+    <div>
+      <div class="steps">
+        <div class="step"><div class="n">01</div><div><b>公開Demoの安全ルール</b><br><span class="tiny">実在情報を入力しない。</span></div></div>
+        <div class="step"><div class="n">02</div><div><b>Owner / Officeの入口</b></div></div>
+        <div class="step"><div class="n">03</div><div><b>今日の訪問</b></div></div>
+        <div class="step"><div class="n">04</div><div><b>変更前の影響確認</b></div></div>
+        <div class="step"><div class="n">05</div><div><b>請求準備</b></div></div>
+        <div class="step"><div class="n">06</div><div><b>Staffの担当訪問</b></div></div>
+        <div class="step"><div class="n">07</div><div><b>患者本人の予定</b></div></div>
+        <div class="step"><div class="n">08</div><div><b>家族代理の表示範囲</b></div></div>
+        <div class="step"><div class="n">09</div><div><b>安全な家族連絡</b></div></div>
+        <div class="step"><div class="n">10</div><div><b>System Check</b></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="screen phone"><img src="../presentation-qa/manuals-v1.1/tutorial-live-390.png"></div>
+      <div class="qrbox card" style="margin-top:4mm"><img src="assets/qr-tutorial.png"><div><b>First10 Start</b><div class="qrtext">tutorial.html?mode=start</div></div></div>
+      <div class="callout" style="margin-top:4mm"><p><b>基本操作：</b>Back / Next / Skip / Close。Escでも閉じられます。途中の進捗はTutorial stateだけを保存します。</p></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 2/10</span><span>First10 / Tutorial state only</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Owner・Office</div>
+  <h1>朝は「今日の訪問」から確認。</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="screen"><img src="../presentation/live-owner-desktop.png"></div>
+    <div class="card">
+      <h2>Owner / Officeの主な確認</h2>
+      <ul>
+        <li>今日の訪問と担当</li>
+        <li>未割当・未記録・未連絡</li>
+        <li>請求準備</li>
+        <li>訪問単位の状態</li>
+      </ul>
+      <div class="qrbox" style="margin-top:5mm"><img src="assets/qr-owner.png"><div><b>Owner / Office</b><div class="qrtext">owner.html</div></div></div>
+    </div>
+  </div>
+  <div class="card deep" style="margin-top:6mm"><h3>権限</h3><p>Owner / Officeは事務所運営の範囲を扱います。StaffやPatient / Familyと同じ画面・同じ権限にはしません。</p></div>
+  <div class="footer"><span>Detailed Manual 3/10</span><span>Owner / Visit Day Control Tower</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Change & Claim</div>
+  <h1>変更は、確定前にImpactを確認。</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div>
+      <h2>変更Impact Preflight</h2>
+      <div class="flow">
+        <span>継続予定</span><i>→</i><span>Impact確認</span><i>→</i><span>運営判断</span>
+      </div>
+      <div class="card soft" style="margin-top:5mm">
+        <h3>確認する影響</h3>
+        <ul>
+          <li>担当施術者の衝突</li>
+          <li>施設人数区分</li>
+          <li>家族への通知</li>
+          <li>請求準備</li>
+        </ul>
+      </div>
+      <div class="callout warn" style="margin-top:5mm"><p>Patient / Familyの変更希望は、その場で確定変更にはしません。運営側の確認待ちとして扱います。</p></div>
+    </div>
+    <div>
+      <h2>Claim Readiness</h2>
+      <p>今月の請求準備状況を、Owner / Officeの確認項目として扱います。</p>
+      <div class="screen" style="margin-top:5mm"><img src="../presentation/live-owner-desktop.png"></div>
+      <div class="qrbox card" style="margin-top:4mm"><img src="assets/qr-owner.png"><div><b>Owner / Office</b><div class="qrtext">owner.html</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 4/10</span><span>Impact / Claim readiness</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Staff</div>
+  <h1>Staff - 自分の担当訪問だけを確認。</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="screen phone"><img src="../presentation/live-staff-mobile.png"></div>
+    <div>
+      <div class="card">
+        <h2>現場で扱うこと</h2>
+        <ul>
+          <li>本日の担当訪問</li>
+          <li>必要な訪問先情報</li>
+          <li>到着</li>
+          <li>施術記録</li>
+          <li>完了</li>
+        </ul>
+      </div>
+      <div class="card soft" style="margin-top:5mm">
+        <h3>施術記録</h3>
+        <p>原記録を保持するversioned運用。First10は到着・保存・完了を自動実行しません。</p>
+      </div>
+      <div class="qrbox card" style="margin-top:5mm"><img src="assets/qr-staff.png"><div><b>Staff</b><div class="qrtext">staff.html</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 5/10</span><span>Staff / field role</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Patient・Family</div>
+  <h1>患者本人と家族代理を分けて確認。</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="screen phone"><img src="../presentation/live-family-mobile.png"></div>
+    <div>
+      <div class="card">
+        <h2>Patient</h2>
+        <p>自分の訪問予定を確認します。</p>
+      </div>
+      <div class="card" style="margin-top:4mm">
+        <h2>Family</h2>
+        <p>患者本人とは別session。同意scopeを超える施術メモを表示しません。</p>
+      </div>
+      <div class="card soft" style="margin-top:4mm">
+        <h3>変更希望</h3>
+        <p>変更希望を送っても、その場で訪問予定が確定変更されるわけではありません。</p>
+      </div>
+      <div class="qrbox card" style="margin-top:4mm"><img src="assets/qr-customer.png"><div><b>Patient / Family</b><div class="qrtext">customer.html</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 6/10</span><span>Patient / Family scope</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Safe Communication</div>
+  <h1>家族連絡は、健康情報を含めない。</h1>
+  <div class="grid2" style="margin-top:7mm">
+    <div>
+      <div class="card deep">
+        <h2>安全な通知の境界</h2>
+        <ul>
+          <li>承認済みの非機微テンプレートを使う</li>
+          <li>健康情報・施術内容の詳細をLINEへ載せない</li>
+          <li>家族の同意scopeを超えない</li>
+          <li>実契約者のLINE資格情報は契約後にBinding</li>
+        </ul>
+      </div>
+      <div class="callout" style="margin-top:6mm"><p>LINEは問い合わせ・通知・再入口として使い、機微な健康・施術情報は認証済みWeb側で扱います。</p></div>
+    </div>
+    <div>
+      <h2>Owner / Officeから確認</h2>
+      <div class="screen"><img src="../presentation/live-owner-desktop.png"></div>
+      <div class="qrbox card" style="margin-top:5mm"><img src="assets/qr-owner.png"><div><b>Owner / Office</b><div class="qrtext">owner.html</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 7/10</span><span>LINE / safe notification boundary</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / System Check</div>
+  <h1>運用前の状態を、System Checkで確認。</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div class="screen"><img src="../presentation/live-system-check.png"></div>
+    <div>
+      <div class="card">
+        <h2>確認すること</h2>
+        <ul>
+          <li>System identity</li>
+          <li>Runtime mode</li>
+          <li>Auth boundary</li>
+          <li>Demo / Production Guard</li>
+          <li>Database / LINE binding readiness</li>
+        </ul>
+      </div>
+      <div class="qrbox card" style="margin-top:5mm"><img src="assets/qr-system-check.png"><div><b>System Check</b><div class="qrtext">system-check.html</div></div></div>
+    </div>
+  </div>
+  <div class="card deep" style="margin-top:6mm"><h3>表示しないもの</h3><p>患者情報やSecret / TokenをSystem CheckやManualへ表示しません。契約後に必要な設定はREADY工程で行います。</p></div>
+  <div class="footer"><span>Detailed Manual 8/10</span><span>System Check / safe preflight</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / Safety & Recovery</div>
+  <h1>Safety / Accessibility / Trouble Recovery</h1>
+  <div class="grid3" style="margin-top:7mm">
+    <div class="card">
+      <h2>Safety</h2>
+      <ul>
+        <li>公開Demoに実在情報を入れない</li>
+        <li>実Authを標準Demoで作らない</li>
+        <li>Secret / TokenをManualへ記載しない</li>
+        <li>LINEへ健康情報を送らない</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Accessibility</h2>
+      <ul>
+        <li>Tabで移動</li>
+        <li>Enter / Spaceで操作</li>
+        <li>EscでFirst10を閉じる</li>
+        <li>タッチ・マウス対応</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Trouble</h2>
+      <ul>
+        <li>途中から → Resume</li>
+        <li>最初から → Replay</li>
+        <li>迷った → Guide Center</li>
+        <li>状態不明 → System Check</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:7mm">
+    <div class="screen phone"><img src="../presentation-qa/manuals-v1.1/guide-live-390.png"></div>
+    <div class="card soft">
+      <h2>Guide Centerへ戻る</h2>
+      <p>困ったときの入口をGuide Centerに統一します。First10をやり直しても業務データは削除しません。</p>
+      <div class="qrbox" style="margin-top:6mm"><img src="assets/qr-guide.png"><div><b>Guide Center</b><div class="qrtext">guide.html</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 9/10</span><span>Safety / Accessibility / Trouble</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DPRO 訪問マッサージ・鍼灸 / FAQ & READY</div>
+  <h1>FAQ / 契約後READY / 保存版チェック</h1>
+  <div class="grid2" style="margin-top:6mm">
+    <div>
+      <div class="card">
+        <h2>FAQ</h2>
+        <h3>LINEはすぐ本番利用？</h3>
+        <p>正式契約後に事業者ごとの資格情報と受信者Bindingを設定・検証してから有効化します。</p>
+        <h3 style="margin-top:4mm">実患者データはDemoへ入れる？</h3>
+        <p>入れません。</p>
+        <h3 style="margin-top:4mm">家族は施術メモを全部見られる？</h3>
+        <p>同意scopeを超える情報は表示しません。</p>
+      </div>
+    </div>
+    <div>
+      <div class="card soft">
+        <h2>Post-contract settings</h2>
+        <ul>
+          <li>実tenant作成</li>
+          <li>Owner Auth登録</li>
+          <li>Staff / Patient / Familyの本番利用者設定</li>
+          <li>LINE資格情報・受信者Binding</li>
+          <li>Production System Check</li>
+          <li>端末QA後に本番切替</li>
+        </ul>
+      </div>
+      <div class="qrbox card" style="margin-top:5mm"><img src="assets/qr-demo.png"><div><b>LIVE DEMO</b><div class="qrtext">demo.html</div></div></div>
+    </div>
+  </div>
+  <div class="card deep" style="margin-top:7mm">
+    <h2>保存版チェック</h2>
+    <div class="check">
+      <div>□ Guide Centerの場所を確認</div>
+      <div>□ First10を完了</div>
+      <div>□ Owner / Officeの役割を確認</div>
+      <div>□ Staffの役割を確認</div>
+      <div>□ Patient / Familyの範囲を確認</div>
+      <div>□ System Checkの場所を確認</div>
+      <div>□ 安全な家族連絡の境界を確認</div>
+      <div>□ 契約後READYの境界を理解</div>
+    </div>
+  </div>
+  <div class="footer"><span>Detailed Manual 10/10</span><span>FAQ / READY / checklist</span></div>
+</section>
+</body></html>

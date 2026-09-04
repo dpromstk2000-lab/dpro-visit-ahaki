@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "name": "guide-live-390",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "consoleErrors": [],
+      "result": "PASS"
+    },
+    {
+      "name": "tutorial-live-390",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "consoleErrors": [],
+      "result": "PASS"
+    }
+  ],
+  "result": "PASS"
+}

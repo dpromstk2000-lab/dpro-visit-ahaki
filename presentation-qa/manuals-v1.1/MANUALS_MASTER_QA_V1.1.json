@@ -1,0 +1,39 @@
+{
+  "master": "CENTRAL PRESENTATION / TUTORIAL MASTER V1.2",
+  "tutorial_standard": "DPRO TUTORIAL STANDARD V1.1",
+  "quick_start": {
+    "pages": "3/3",
+    "First10": "exactly 10",
+    "current_public_live_screens": true,
+    "Guide_Start_Resume_Replay": true,
+    "System_Check": true,
+    "Safety": true,
+    "preview_png": true,
+    "final_render_qr": "5/5 PASS",
+    "result": "GREEN_PREPUBLIC"
+  },
+  "detailed_manual": {
+    "pages": "10/10",
+    "First10": "exactly 10",
+    "Owner_Office": true,
+    "Staff": true,
+    "Patient_Family": true,
+    "safe_communication": true,
+    "System_Check": true,
+    "Safety_Accessibility_Trouble": true,
+    "post_contract_READY": true,
+    "FAQ_checklist": true,
+    "preview_png": true,
+    "final_render_qr": "10/10 PASS",
+    "result": "GREEN_PREPUBLIC"
+  },
+  "guide_manual_links": "CONNECTED_PREPUBLIC",
+  "stable_aliases": "byte-identical to new MASTER PDFs",
+  "presentation_gate": "PENDING_PUBLIC_PDF_QA",
+  "complete_final_lock": "HOLD",
+  "sha256": {
+    "DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf": "86088eaf7e1e662f1aec89842d2c8febf7d82d8928193e9c0574481724fe0694",
+    "DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf": "86c71784af9fee939406549676c80a98eef80b9bfb91571d754c3a8e0a1391dd",
+    "guide.html": "bb818d6f84b81e2ca923684c1a5169ee64416ea03127f1a253f957105d4bd91d"
+  }
+}
