@@ -1,0 +1,97 @@
+{
+  "capturedAt": "2026-09-04T01:03:53.023Z",
+  "source": "CURRENT_PUBLIC_LIVE",
+  "items": [
+    {
+      "name": "live-demo-desktop",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "71185b25e8eca61b6c64bc8d2535a7b52f05af1c21e4136e93a805a2b482ca2d",
+      "metrics": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "scrollHeight": 1000,
+        "title": "DPRO 訪問マッサージ・鍼灸 DEMO"
+      },
+      "consoleErrors": [],
+      "safeAction": "none",
+      "businessMutation": 0
+    },
+    {
+      "name": "live-owner-desktop",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "sha256": "d6f9ede4d16fa81fca2d3e87526d60d45f9c26edbe51b5d480ef547be1b00f8d",
+      "metrics": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "scrollHeight": 1100,
+        "title": "Owner | DPRO 訪問マッサージ・鍼灸"
+      },
+      "consoleErrors": [],
+      "safeAction": "Owner demo session login only",
+      "businessMutation": 0
+    },
+    {
+      "name": "live-staff-mobile",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "a7c4fc52e6a73021d497cce70e6f1507f95bad72e568a0c9ac96d6a1b67c9473",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "title": "Staff | DPRO 訪問マッサージ・鍼灸"
+      },
+      "consoleErrors": [],
+      "safeAction": "Staff demo session login only",
+      "businessMutation": 0
+    },
+    {
+      "name": "live-family-mobile",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "10d4fe191774b8a419d0c55652aaf8c47dfbec0580ead084238d505b0c2d3f41",
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 844,
+        "title": "Patient / Family | DPRO 訪問マッサージ・鍼灸"
+      },
+      "consoleErrors": [],
+      "safeAction": "Family demo session login only",
+      "businessMutation": 0
+    },
+    {
+      "name": "live-system-check",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "sha256": "cac6c39749be1357c44aa750181ddedba063ca18ab1744d251cef53b4c127b2a",
+      "metrics": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "scrollHeight": 1312,
+        "title": "System Check | DPRO 訪問マッサージ・鍼灸"
+      },
+      "consoleErrors": [],
+      "safeAction": "GET only",
+      "businessMutation": 0
+    }
+  ],
+  "errors": []
+}

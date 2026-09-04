@@ -1,0 +1,48 @@
+{
+  "master": {
+    "LP": "DPRO-LP-MASTER-V1.4",
+    "A4": "DPRO A4 FLYER MASTER V2.0 / PET SALON source"
+  },
+  "LP_3": "PASS",
+  "LP_4": {
+    "P1_P10": "10/10 exact order",
+    "P1_photo": "industry selected photo",
+    "P10_photo": "industry selected photo",
+    "P2_P9_new_industry_photo": 0,
+    "P4": "HTML/CSS diagram",
+    "P9": "current public LIVE screen",
+    "widths": [
+      375,
+      390,
+      430,
+      768,
+      1280,
+      1440
+    ],
+    "horizontal_overflow": 0,
+    "min_control_px": 44,
+    "iframe_initial": 0,
+    "owner_send_safety": "YES",
+    "result": "GREEN"
+  },
+  "A4": {
+    "html_pdf_pair": true,
+    "page": "A4 portrait 1/1",
+    "master_layout_source": "flyer-pet-salon.html",
+    "features": "6/6",
+    "connected_experience": true,
+    "monthly_total": "5,500 tax included",
+    "routes": "3/3",
+    "final_render_qr": "3/3 PASS",
+    "result": "GREEN"
+  },
+  "frozen_scope": {
+    "SYSTEM_core": "UNCHANGED",
+    "Worker": "UNCHANGED",
+    "Supabase": "UNCHANGED",
+    "Product_52": "UNCHANGED",
+    "Central_registration": "UNCHANGED",
+    "Control_Center_READY": "UNCHANGED"
+  },
+  "complete_final_lock": "HOLD"
+}

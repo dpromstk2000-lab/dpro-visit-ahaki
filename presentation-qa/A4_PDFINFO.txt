@@ -1,0 +1,19 @@
+Title:           DPRO 訪問マッサージ・鍼灸 A4 FLYER MASTER V2.0
+Creator:         Chromium
+Producer:        Skia/PDF m140
+CreationDate:    Fri Sep  4 01:04:17 2026 UTC
+ModDate:         Fri Sep  4 01:04:17 2026 UTC
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           1
+Encrypted:       no
+Page size:       595.92 x 842.88 pts (A4)
+Page rot:        0
+File size:       2722701 bytes
+Optimized:       no
+PDF version:     1.4

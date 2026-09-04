@@ -1,0 +1,13 @@
+{
+  "decoded": [
+    "https://dpro-shop.com/",
+    "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+    "https://lin.ee/YxJGXV6D"
+  ],
+  "expected": [
+    "https://dpro-shop.com/",
+    "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+    "https://lin.ee/YxJGXV6D"
+  ],
+  "result": "PASS"
+}
