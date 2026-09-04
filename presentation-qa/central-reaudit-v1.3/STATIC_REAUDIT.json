@@ -1,0 +1,90 @@
+{
+  "commit": "0ced0dee9c14e5deedc65056fa2ad7ec97240295",
+  "checks": {
+    "lp_section_order": {
+      "actual": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "expected": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "pass": true
+    },
+    "lp_p1_photo": {
+      "pass": true
+    },
+    "lp_p10_photo": {
+      "pass": true
+    },
+    "lp_p4_html_diagram": {
+      "pass": true
+    },
+    "lp_p9_current_screens": {
+      "pass": true
+    },
+    "lp_price": {
+      "pass": true
+    },
+    "lp_owner_send_safety": {
+      "pass": true
+    },
+    "lp_public_copy_clean": {
+      "hits": [],
+      "pass": true
+    },
+    "tutorial_exact_10": {
+      "count": 10,
+      "pass": true
+    },
+    "tutorial_modes": {
+      "pass": true
+    },
+    "tutorial_close_esc": {
+      "pass": true
+    },
+    "tutorial_no_state_mutation_copy": {
+      "pass": true
+    },
+    "tutorial_touch_keyboard_css": {
+      "pass": true
+    },
+    "guide_exact_10": {
+      "count": 10,
+      "pass": true
+    },
+    "guide_start_resume_replay": {
+      "pass": true
+    },
+    "guide_accessibility_copy": {
+      "pass": true
+    },
+    "quick_pdf_current_links": {
+      "pass": true
+    },
+    "detailed_pdf_current_links": {
+      "pass": true
+    },
+    "manual_current_screens": {
+      "pass": true
+    }
+  },
+  "failed": []
+}

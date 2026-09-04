@@ -1,0 +1,18 @@
+{
+  "commit": "0ced0dee9c14e5deedc65056fa2ad7ec97240295",
+  "report": {
+    "quick": {
+      "count": 3,
+      "overflow": [],
+      "brokenImages": [],
+      "errors": []
+    },
+    "detailed": {
+      "count": 10,
+      "overflow": [],
+      "brokenImages": [],
+      "errors": []
+    }
+  },
+  "result": "PASS"
+}

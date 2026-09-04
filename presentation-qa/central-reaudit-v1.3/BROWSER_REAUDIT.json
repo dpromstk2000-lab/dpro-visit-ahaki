@@ -1,0 +1,490 @@
+{
+  "commit": "0ced0dee9c14e5deedc65056fa2ad7ec97240295",
+  "widths": [
+    {
+      "width": 375,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 12,
+        "y": 7373.453125,
+        "width": 351,
+        "height": 571.75,
+        "top": 7373.453125,
+        "right": 363,
+        "bottom": 7945.203125,
+        "left": 12
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 12,
+        "y": 7308.90625,
+        "width": 366,
+        "height": 571.75,
+        "top": 7308.90625,
+        "right": 378,
+        "bottom": 7880.65625,
+        "left": 12
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    },
+    {
+      "width": 430,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 12,
+        "y": 7094.109375,
+        "width": 406,
+        "height": 549,
+        "top": 7094.109375,
+        "right": 418,
+        "bottom": 7643.109375,
+        "left": 12
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 16,
+        "y": 6210.546875,
+        "width": 736,
+        "height": 346,
+        "top": 6210.546875,
+        "right": 752,
+        "bottom": 6556.546875,
+        "left": 16
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    },
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 80,
+        "y": 4652.25,
+        "width": 1120,
+        "height": 278,
+        "top": 4652.25,
+        "right": 1200,
+        "bottom": 4930.25,
+        "left": 80
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "sections": [
+        "p1",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p6",
+        "p7",
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "overflowEls": [],
+      "p1Ctas": [
+        {
+          "text": "LIVE DEMO",
+          "h": 48
+        },
+        {
+          "text": "LINEで導入相談",
+          "h": 48
+        },
+        {
+          "text": "DPRO SHOP公式",
+          "h": 48
+        }
+      ],
+      "priceText": "DPRO SHOP MONTHLY OPERATION\n            月額 5,500円（税込）\n            \n              LINE公式運用3,300円\n              ホームページ運用1,100円\n              DPROシステム運用1,100円\n            \n          \n          5,500円はDPRO単体の利用料ではありません。LINE公式・ホームページ・DPROシステムをまとめた月額運用の構成です。初期制作・構築費や適用条件は別途確認してください。",
+      "priceRect": {
+        "x": 160,
+        "y": 4652.25,
+        "width": 1120,
+        "height": 278,
+        "top": 4652.25,
+        "right": 1280,
+        "bottom": 4930.25,
+        "left": 160
+      },
+      "photos": [
+        {
+          "sel": "#p1 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 1200
+        },
+        {
+          "sel": "#p10 img",
+          "exists": true,
+          "nw": 1800,
+          "nh": 2700
+        }
+      ],
+      "p4Exists": true,
+      "p4Text": "OWNER / OFFICE事務所から今日の訪問を確認\n              STAFF施術者が担当訪問を確認\n              PATIENT / FAMILY患者・家族が予定を確認\n            \n            →\n            DPROVISIT AHAKI訪問運営の中心\n            →\n            ONE MANAGEMENT HUB今日の訪問担当・施術記録家族連絡・請求準備",
+      "p9imgs": [
+        {
+          "src": "presentation/live-owner-desktop.png",
+          "nw": 1440,
+          "nh": 1100
+        },
+        {
+          "src": "presentation/live-staff-mobile.png",
+          "nw": 390,
+          "nh": 844
+        },
+        {
+          "src": "presentation/live-family-mobile.png",
+          "nw": 390,
+          "nh": 844
+        }
+      ],
+      "runtimeErrors": []
+    }
+  ],
+  "tutorial": {
+    "390": {
+      "guideData": {
+        "first10": 10,
+        "start": "tutorial.html?mode=start",
+        "resume": "tutorial.html?mode=resume",
+        "replay": "tutorial.html?mode=replay"
+      },
+      "runtime": "PASS"
+    },
+    "1440": {
+      "guideData": {
+        "first10": 10,
+        "start": "tutorial.html?mode=start",
+        "resume": "tutorial.html?mode=resume",
+        "replay": "tutorial.html?mode=replay"
+      },
+      "runtime": "PASS"
+    },
+    "badMethods": []
+  },
+  "publicHashes": {},
+  "errors": []
+}

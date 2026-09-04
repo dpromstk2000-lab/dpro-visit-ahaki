@@ -1,0 +1,324 @@
+DPRO LINE SYSTEMS / DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸
+保存版 詳細操作マニュアル
+
+保存版 操作マニュアル
+Owner / Office・Staff・Patient / Familyが、導入後に自分で操作場所と安全な運用を確認できる
+DPRO標準の保存版です。
+
+Guide Center
+
+現在のGuide Center
+
+First10のStart / Resume / Replay、役割別入口、
+System Check、安全な使い方、困ったときの戻り
+方、保存版PDFをまとめています。
+
+Guide Center
+guide.html
+
+このマニュアルの境界
+
+公開Demoへ実在する患者・家族の情報を入力しません。お客様専用環境、利用者アカウント、契約者専用LINE
+連携、本番利用開始は正式契約後に個別設定します。
+
+Detailed Manual 1/10
+
+Guide Center / はじめ方
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / First10
+
+First10 - 全10ステップ
+01
+
+公開Demoの安全ルール
+実在情報を入力しない。
+
+02
+
+Owner / Officeの入口
+
+03
+
+今日の訪問
+
+04
+
+変更前の影響確認
+
+05
+
+請求準備
+
+06
+
+Staffの担当訪問
+
+07
+
+患者本人の予定
+
+08
+
+家族代理の表示範囲
+
+09
+
+安全な家族連絡
+
+10
+
+System Check
+First10 Start
+tutorial.html?mode=start
+
+基本操作：Back / Next / Skip / Close。Escでも閉
+
+じられます。途中の進捗はFirst10の進み具合だけ
+を保存します。
+
+Detailed Manual 2/10
+
+First10 / 進捗だけを保存
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / Owner ・ Office
+
+朝は「今日の訪問」から確認。
+
+Owner / Officeの主な確認
+今日の訪問と担当
+未割当・未記録・未連絡
+請求準備
+訪問単位の状態
+
+Owner / Office
+owner.html
+
+権限
+
+Owner / Officeは事務所運営の範囲を扱います。StaffやPatient / Familyと同じ画面・同じ権限にはしません。
+
+Detailed Manual 3/10
+
+Owner / 今日の訪問
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / 変 更 ・ 請 求 準 備
+
+変更は、確定前に影響を確認。
+変更前の影響確認
+継続予定
+
+→
+
+影響確認
+
+請求準備
+→
+
+運営判断
+
+今月の請求準備状況を、Owner / Officeの確認項目として
+扱います。
+
+確認する影響
+担当施術者の衝突
+施設人数区分
+家族への通知
+請求準備
+
+Patient / Familyの変更希望は、その場で確定変更に
+はしません。運営側の確認待ちとして扱います。
+
+Owner / Office
+owner.html
+
+Detailed Manual 4/10
+
+変更前確認・請求準備
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / Staff
+
+Staff - 自分の担当訪問だけを確認。
+現場で扱うこと
+本日の担当訪問
+必要な訪問先情報
+到着
+施術記録
+完了
+
+施術記録
+
+原記録を残し、更新履歴を保持する運用です。
+First10は到着・保存・完了を自動実行しません。
+
+Staff
+staff.html
+
+Detailed Manual 5/10
+
+Staff / 現場での操作
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / Patient ・ Family
+
+患者本人と家族代理を分けて確認。
+
+Patient
+自分の訪問予定を確認します。
+
+Family
+患者本人とは別の利用者として扱い、同意範囲を超
+える施術メモを表示しません。
+
+変更希望
+
+変更希望を送っても、その場で訪問予定が確定変更
+されるわけではありません。
+
+Patient / Family
+customer.html
+
+Detailed Manual 6/10
+
+患者・家族 / 表示範囲
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / 安 全 な 家 族 連 絡
+
+家族連絡は、健康情報を含めない。
+安全な通知の境界
+
+Owner / Officeから確認
+
+承認済みの非機微テンプレートを使う
+健康情報・施術内容の詳細をLINEへ載せない
+家族の同意範囲を超えない
+契約者専用のLINE連携情報は契約後に紐付け
+
+LINEは問い合わせ・通知・再入口として使い、機
+微な健康・施術情報は認証済みWeb側で扱います。
+
+Owner / Office
+owner.html
+
+Detailed Manual 7/10
+
+LINE / 安全な通知範囲
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / System Check
+
+運用前の状態を、System Checkで確認。
+確認すること
+システム情報
+動作環境
+権限の範囲
+Demo / 本番の安全設定
+データベース・LINE連携の準備状態
+
+System Check
+system-check.html
+
+表示しないもの
+
+患者情報や秘密情報をSystem Checkや保存版PDFへ表示しません。契約後に必要な設定は個別設定工程で行い
+ます。
+
+Detailed Manual 8/10
+
+System Check / 運用前確認
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / Safety & Recovery
+
+安全な使い方・操作方法・困ったとき
+安全
+
+操作方法
+
+困ったとき
+
+公開Demoに実在情報を入れ
+
+Tabで移動
+
+途中から → Resume
+
+ない
+
+Enter / Spaceで操作
+
+最初から → Replay
+
+実Authを標準Demoで作らな
+い
+
+EscでFirst10を閉じる
+
+迷った → Guide Center
+
+タッチ・マウス対応
+
+状態不明 → System Check
+
+Secret / TokenをManualへ記
+載しない
+LINEへ健康情報を送らない
+
+Guide Centerへ戻る
+困ったときの入口をGuide Centerに統一します。
+First10をやり直しても業務データは削除しません。
+
+Guide Center
+guide.html
+
+Detailed Manual 9/10
+
+安全・操作方法・困ったとき
+
+DPRO 訪 問 マ ッ サ ー ジ ・ 鍼 灸 / FAQ ・ 契 約 後 設 定
+
+FAQ・契約後設定・保存版チェック
+FAQ
+LINEはすぐ本番利用？
+正式契約後に事業者ごとのLINE連携情報と受信者
+の紐付けを設定・確認してから有効化します。
+
+契約後に設定する項目
+お客様専用環境の設定
+Ownerアカウントの設定
+Staff・患者本人・家族代理の利用者設定
+LINE連携情報・受信者紐付け
+
+実患者データはDemoへ入れる？
+
+本番環境のSystem Check
+
+入れません。
+
+利用端末で確認後に本番利用開始
+
+家族は施術メモを全部見られる？
+
+同意範囲を超える情報は表示しません。
+
+LIVE DEMO
+demo.html
+
+保存版チェック
+□ Guide Centerの場所を確認
+
+□ First10を完了
+
+□ Owner / Officeの役割を確認
+
+□ Staffの役割を確認
+
+□ Patient / Familyの範囲を確認
+
+□ System Checkの場所を確認
+
+□ 安全な家族連絡の境界を確認
+
+□ 契約後に行う設定範囲を確認
+
+Detailed Manual 10/10
+
+FAQ / 契約後設定 / チェック
+
+

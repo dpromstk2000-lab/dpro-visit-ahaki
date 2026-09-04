@@ -1,0 +1,7 @@
+{
+  "commit": "0ced0dee9c14e5deedc65056fa2ad7ec97240295",
+  "a4": {"pages": 1, "a4_portrait": true, "public_equals_repo": true, "qr_three_expected": true},
+  "quick_start": {"pages": 3, "public_equals_repo": true},
+  "detailed_manual": {"pages": 10, "public_equals_repo": true},
+  "result": "PASS"
+}
