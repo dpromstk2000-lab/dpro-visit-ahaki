@@ -1,0 +1,126 @@
+{
+  "result": "PASS",
+  "qr": [
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start",
+      "http_code": "200",
+      "pass": true
+    }
+  ],
+  "guide_links": [
+    {
+      "href": "styles.css",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/styles.css",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "demo.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "index.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/index.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "tutorial.html?mode=start",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "tutorial.html?mode=resume",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=resume",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "tutorial.html?mode=replay",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=replay",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "owner.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "staff.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "customer.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "system-check.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "demo.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "system-check.html",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html",
+      "http_code": "200",
+      "pass": true
+    },
+    {
+      "href": "DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf",
+      "http_code": "404",
+      "pass": false
+    },
+    {
+      "href": "DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf",
+      "url": "https://dpromstk2000-lab.github.io/dpro-visit-ahaki/DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf",
+      "http_code": "404",
+      "pass": false
+    }
+  ]
+}

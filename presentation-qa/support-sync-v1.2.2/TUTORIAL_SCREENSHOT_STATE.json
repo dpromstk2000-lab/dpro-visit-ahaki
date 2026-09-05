@@ -1,0 +1,26 @@
+{
+  "version": "1.2.2",
+  "current": 0,
+  "step_id": "visit-ahaki-first10-01-demo-safety",
+  "completed": false,
+  "route": "demo.html",
+  "actual_route": "demo.html",
+  "selector": ".notice",
+  "target_found": true,
+  "target_visible_after_scroll": true,
+  "highlight_visible": true,
+  "overlay_visible": true,
+  "overlay_target_overlap_ratio": 0.0508,
+  "target_rect": {
+    "left": 12,
+    "top": 346.765625,
+    "right": 378,
+    "bottom": 447.15625,
+    "width": 366,
+    "height": 100.390625
+  },
+  "closed": false,
+  "target_missing": false,
+  "pending_index": null,
+  "draggable": true
+}

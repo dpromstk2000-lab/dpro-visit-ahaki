@@ -1,0 +1,65 @@
+{
+  "result": "PASS",
+  "start": true,
+  "resume": true,
+  "replay": true,
+  "viewports": [
+    {
+      "width": 390,
+      "horizontal_overflow": 0,
+      "actions": [
+        {
+          "id": "startFirst10",
+          "h": 54
+        },
+        {
+          "id": "resumeFirst10",
+          "h": 54
+        },
+        {
+          "id": "replayFirst10",
+          "h": 54
+        }
+      ],
+      "errors": []
+    },
+    {
+      "width": 768,
+      "horizontal_overflow": 0,
+      "actions": [
+        {
+          "id": "startFirst10",
+          "h": 66
+        },
+        {
+          "id": "resumeFirst10",
+          "h": 66
+        },
+        {
+          "id": "replayFirst10",
+          "h": 66
+        }
+      ],
+      "errors": []
+    },
+    {
+      "width": 1440,
+      "horizontal_overflow": 0,
+      "actions": [
+        {
+          "id": "startFirst10",
+          "h": 66
+        },
+        {
+          "id": "resumeFirst10",
+          "h": 66
+        },
+        {
+          "id": "replayFirst10",
+          "h": 66
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

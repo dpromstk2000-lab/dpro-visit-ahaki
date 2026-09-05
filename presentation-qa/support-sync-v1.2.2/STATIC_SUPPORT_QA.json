@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "checks": {
+    "obsolete_skip_zero": true,
+    "target_navigation_explained": true,
+    "target_missing_recovery_explained": true,
+    "no_auto_login": true,
+    "no_auto_business_mutation": true,
+    "guide_new_quick_link": true,
+    "guide_new_detail_link": true,
+    "quick_exact_3_source_pages": true,
+    "detail_exact_10_source_pages": true
+  },
+  "failed": []
+}

@@ -1,0 +1,7 @@
+manuals/assets/qr-customer.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html
+manuals/assets/qr-demo.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html
+manuals/assets/qr-guide.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html
+manuals/assets/qr-owner.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html
+manuals/assets/qr-staff.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html
+manuals/assets/qr-system-check.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html
+manuals/assets/qr-tutorial.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start

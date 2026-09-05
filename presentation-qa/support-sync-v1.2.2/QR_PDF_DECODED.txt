@@ -1,0 +1,15 @@
+presentation-qa/support-sync-v1.2.2/quick-renders/page-1.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start
+presentation-qa/support-sync-v1.2.2/quick-renders/page-1.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html
+presentation-qa/support-sync-v1.2.2/quick-renders/page-2.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html
+presentation-qa/support-sync-v1.2.2/quick-renders/page-3.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html
+presentation-qa/support-sync-v1.2.2/quick-renders/page-3.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-01.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-02.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/tutorial.html?mode=start
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-03.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-04.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-05.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/staff.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-06.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/customer.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-07.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/owner.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-08.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/system-check.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-09.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/guide.html
+presentation-qa/support-sync-v1.2.2/detailed-renders/page-10.png	https://dpromstk2000-lab.github.io/dpro-visit-ahaki/demo.html

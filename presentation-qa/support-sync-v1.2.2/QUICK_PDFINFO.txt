@@ -1,0 +1,18 @@
+Creator:         Chromium
+Producer:        Skia/PDF m153
+CreationDate:    Sat Sep  5 04:47:06 2026 UTC
+ModDate:         Sat Sep  5 04:47:06 2026 UTC
+Custom Metadata: no
+Metadata Stream: no
+Tagged:          no
+UserProperties:  no
+Suspects:        no
+Form:            none
+JavaScript:      no
+Pages:           3
+Encrypted:       no
+Page size:       594.96 x 841.92 pts (A4)
+Page rot:        0
+File size:       874004 bytes
+Optimized:       no
+PDF version:     1.4
