@@ -1,5 +1,5 @@
 name: VISIT AHAKI Tutorial Navigation V1.2.2 QA
-# R5: protected target overflow is baseline-aware; auxiliary baseline context is isolated
+# R6: request failures are classified so target-page navigation aborts are not misattributed to Tutorial
 
 on:
   push:
@@ -166,7 +166,17 @@ jobs:
               }
             });
             context.on('requestfailed', req => {
-              requestErrors.push({url:req.url(),method:req.method(),failure:req.failure()?.errorText || 'requestfailed'});
+              const failure = req.failure()?.errorText || 'requestfailed';
+              const method = req.method().toUpperCase();
+              let frameUrl = '';
+              try { frameUrl = req.frame().url(); } catch (_) {}
+              const expectedTargetNavigationAbort =
+                method === 'GET' &&
+                failure === 'net::ERR_ABORTED' &&
+                !/\/tutorial\.html(?:\?|$)/.test(frameUrl);
+              if(!expectedTargetNavigationAbort){
+                requestErrors.push({url:req.url(),method,failure,frame_url:frameUrl});
+              }
             });
             context.on('page', page => {
               page.on('console', msg => { if(msg.type()==='error') consoleErrors.push(msg.text()); });
