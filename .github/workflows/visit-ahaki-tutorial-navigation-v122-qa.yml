@@ -1,5 +1,5 @@
 name: VISIT AHAKI Tutorial Navigation V1.2.2 QA
-# R4: protected target overflow is baseline-aware
+# R5: protected target overflow is baseline-aware; auxiliary baseline context is isolated
 
 on:
   push:
@@ -212,18 +212,26 @@ jobs:
             const frameOverflow = Math.max(0, geom.frameScrollWidth - geom.frameClientWidth);
             let standaloneOverflow = 0;
             if(frameOverflow > 2){
-              const direct = await page.context().newPage();
+              // Measure the protected page in an isolated context so its own
+              // background GETs/aborts are not counted as Tutorial-caused errors.
+              const browser = page.context().browser();
+              assert(browser, 'browser unavailable for standalone overflow baseline');
+              const directContext = await browser.newContext({
+                viewport: page.viewportSize() || {width,height:1000}
+              });
+              const direct = await directContext.newPage();
               try{
                 await direct.goto(`${base}/${step.target_page_or_route}?qa=overflow-${width}-${index+1}-${Date.now()}`,{
-                  waitUntil:'networkidle',timeout:90000
+                  waitUntil:'domcontentloaded',timeout:90000
                 });
+                await direct.waitForTimeout(800);
                 const directGeom = await direct.evaluate(() => ({
                   scrollWidth:document.documentElement.scrollWidth,
                   clientWidth:document.documentElement.clientWidth
                 }));
                 standaloneOverflow = Math.max(0, directGeom.scrollWidth - directGeom.clientWidth);
               } finally {
-                await direct.close();
+                await directContext.close();
               }
               assert(
                 frameOverflow <= standaloneOverflow + 2,
