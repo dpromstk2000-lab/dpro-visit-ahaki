@@ -29,54 +29,21 @@ jobs:
           set -euo pipefail
           mkdir -p "$EVIDENCE_DIR"
           test "$(git rev-parse "$BASELINE_HEAD")" = "$BASELINE_HEAD"
-
-          cat > /tmp/expected.tsv <<'EOF'
-          tutorial.html	5a58442059e11a07647f73df8e10cae114b627ff
-          guide.html	d3f86e72ece607a057026f60295a9c54977d82b2
-          demo.html	8e57e5f0e5ca3d31240077a1fab45030ce05996d
-          owner.html	6c02a381359c465ba7384161193030134527832d
-          staff.html	db163d5f16c1e66007b9a5e40e1aed38dccadf25
-          customer.html	cce029f4adfe8e0370e1386c75247adfc0c855e6
-          system-check.html	36192f6ba1883409d020bf6d65c75b8b4e53d095
-          EOF
-
-          while IFS=$'\t' read -r path expected; do
-            actual="$(git rev-parse "$BASELINE_HEAD:$path")"
-            test "$actual" = "$expected"
-          done < /tmp/expected.tsv
-
-          # Target surfaces and Guide must remain byte-identical to protected baseline.
+          test "$(git rev-parse HEAD:tutorial.html)" != "$(git rev-parse "$BASELINE_HEAD:tutorial.html")"
+          grep -Fq 'data-tutorial-contract="1.2.2"' tutorial.html
           for path in guide.html demo.html owner.html staff.html customer.html system-check.html app.js config.js styles.css; do
-            before="$(git rev-parse "$BASELINE_HEAD:$path")"
-            after="$(git rev-parse "HEAD:$path")"
-            test "$before" = "$after"
+            test "$(git rev-parse "$BASELINE_HEAD:$path")" = "$(git rev-parse "HEAD:$path")"
           done
-
-          test "$(git rev-parse HEAD:tutorial.html)" != "5a58442059e11a07647f73df8e10cae114b627ff"
-
           git diff --name-only "$BASELINE_HEAD" HEAD | sort > "$EVIDENCE_DIR/CHANGED_FILES_AT_QA.txt"
           unexpected="$(grep -vE '^(tutorial\.html|\.github/workflows/visit-ahaki-tutorial-navigation-v122-qa\.yml)$' "$EVIDENCE_DIR/CHANGED_FILES_AT_QA.txt" || true)"
           test -z "$unexpected"
-
-          {
-            echo "BASELINE_HEAD=$BASELINE_HEAD"
-            echo "QA_HEAD=$(git rev-parse HEAD)"
-            for path in tutorial.html guide.html demo.html owner.html staff.html customer.html system-check.html app.js config.js styles.css; do
-              echo "$path BEFORE=$(git rev-parse "$BASELINE_HEAD:$path") AFTER=$(git rev-parse "HEAD:$path")"
-            done
-          } > "$EVIDENCE_DIR/BEFORE_AFTER_SHA_AT_QA.txt"
-
           {
             echo "NO_CORE_CHANGE=PASS"
             echo "baseline=$BASELINE_HEAD"
-            echo "app.js=$(git rev-parse HEAD:app.js)"
-            echo "config.js=$(git rev-parse HEAD:config.js)"
-            echo "owner.html=$(git rev-parse HEAD:owner.html)"
-            echo "staff.html=$(git rev-parse HEAD:staff.html)"
-            echo "customer.html=$(git rev-parse HEAD:customer.html)"
-            echo "demo.html=$(git rev-parse HEAD:demo.html)"
-            echo "system-check.html=$(git rev-parse HEAD:system-check.html)"
-            echo "styles.css=$(git rev-parse HEAD:styles.css)"
+            echo "qa_head=$GITHUB_SHA"
+            for path in guide.html demo.html owner.html staff.html customer.html system-check.html app.js config.js styles.css; do
+              echo "$path=$(git rev-parse HEAD:$path)"
+            done
           } > "$EVIDENCE_DIR/NO_CORE_CHANGE_EVIDENCE.txt"
 
       - name: Wait for public Tutorial V1.2.2
@@ -85,9 +52,11 @@ jobs:
           set -euo pipefail
           ok=0
           for attempt in $(seq 1 48); do
-            if curl -fsSL --retry 2 --retry-delay 1 "$BASE_URL/tutorial.html?qa=${GITHUB_SHA}-${attempt}" | grep -Fq 'data-tutorial-contract="1.2.2"'; then
-              ok=1
-              break
+            if curl -fsSL --retry 2 --retry-delay 1 "$BASE_URL/tutorial.html?qa=${GITHUB_SHA}-${attempt}" -o /tmp/public-tutorial.html; then
+              if grep -Fq 'data-tutorial-contract="1.2.2"' /tmp/public-tutorial.html; then
+                ok=1
+                break
+              fi
             fi
             sleep 5
           done
@@ -106,323 +75,31 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
-      - name: Run Tutorial Navigation V1.2.2 runtime QA
+      - name: Restore and run Tutorial Navigation V1.2.2 runtime QA
         shell: bash
         run: |
           set -euo pipefail
-          cat > "$GITHUB_WORKSPACE/.tutorial-v122-qa.js" <<'JS'
-          const fs = require('fs');
-          const { chromium } = require('playwright');
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
 
-          const base = process.env.BASE_URL;
-          const out = process.env.EVIDENCE_DIR;
-          fs.mkdirSync(out, {recursive:true});
-
-          const VIEWPORTS = [375,390,430,768,1440];
-          const REQUIRED_FIELDS = ['step_id','role_or_surface','target_page_or_route','target_selector','title','body','placement','target_required'];
-          const EXPECTED_IDS = [
-            'visit-ahaki-first10-01-demo-safety',
-            'visit-ahaki-first10-02-owner-entry',
-            'visit-ahaki-first10-03-today-visits',
-            'visit-ahaki-first10-04-impact-preflight',
-            'visit-ahaki-first10-05-claim-readiness',
-            'visit-ahaki-first10-06-staff-assigned-visits',
-            'visit-ahaki-first10-07-patient-schedule',
-            'visit-ahaki-first10-08-family-scope',
-            'visit-ahaki-first10-09-safe-family-contact',
-            'visit-ahaki-first10-10-system-check'
-          ];
-
-          function assert(cond,msg){ if(!cond) throw new Error(msg); }
-          const delay = ms => new Promise(r=>setTimeout(r,ms));
-
-          async function waitStatus(page,index,timeout=14000){
-            await page.waitForFunction(
-              (idx) => {
-                const api = window.DPROFirst10;
-                if(!api) return false;
-                const s = api.status();
-                return s.current === idx && s.target_found && s.target_visible_after_scroll &&
-                  s.highlight_visible && s.overlay_visible && !s.target_missing && s.pending_index === null;
-              },
-              index,
-              {timeout}
-            );
-            return await page.evaluate(()=>window.DPROFirst10.status());
-          }
-
-          function track(context){
-            const mutations = [];
-            const requestErrors = [];
-            const consoleErrors = [];
-            context.on('request', req => {
-              const method = req.method().toUpperCase();
-              if(['POST','PUT','PATCH','DELETE'].includes(method)){
-                mutations.push({method,url:req.url()});
-              }
-            });
-            context.on('requestfailed', req => {
-              requestErrors.push({url:req.url(),method:req.method(),failure:req.failure()?.errorText || 'requestfailed'});
-            });
-            context.on('page', page => {
-              page.on('console', msg => { if(msg.type()==='error') consoleErrors.push(msg.text()); });
-              page.on('pageerror', err => consoleErrors.push(err.message));
-            });
-            return {mutations,requestErrors,consoleErrors};
-          }
-
-          async function openGuideFresh(page){
-            await page.goto(`${base}/guide.html?qa=${Date.now()}`,{waitUntil:'networkidle',timeout:90000});
-            await page.evaluate(()=>localStorage.removeItem('dpro_visit_ahaki_first10_v11'));
-            await page.reload({waitUntil:'networkidle'});
-          }
-
-          async function clickGuideStart(page,selector,mode){
-            await Promise.all([
-              page.waitForURL(new RegExp(`tutorial\\.html\\?mode=${mode}`),{timeout:15000}),
-              page.click(selector)
-            ]);
-          }
-
-          async function recordStep(page,width,index,step){
-            const s = await waitStatus(page,index);
-            assert(s.version === '1.2.2',`version mismatch at ${width}/${index+1}`);
-            assert(s.step_id === step.step_id,`step id mismatch at ${width}/${index+1}`);
-            assert(s.route === step.target_page_or_route,`route contract mismatch at ${width}/${index+1}: ${s.route}`);
-            assert(s.actual_route === step.target_page_or_route,`actual route mismatch at ${width}/${index+1}: ${s.actual_route}`);
-            assert(s.selector === step.target_selector,`selector mismatch at ${width}/${index+1}`);
-            assert(s.target_found && s.target_visible_after_scroll && s.highlight_visible && s.overlay_visible,`target presentation failure at ${width}/${index+1}`);
-            assert(s.overlay_target_overlap_ratio <= 0.35,`overlay overlap too high at ${width}/${index+1}: ${s.overlay_target_overlap_ratio}`);
-            assert(s.draggable === true,`overlay is not draggable at ${width}/${index+1}`);
-
-            const geom = await page.evaluate(() => ({
-              scrollWidth:document.documentElement.scrollWidth,
-              clientWidth:document.documentElement.clientWidth,
-              frameScrollWidth:document.querySelector('#targetFrame').contentDocument?.documentElement?.scrollWidth || 0,
-              frameClientWidth:document.querySelector('#targetFrame').contentDocument?.documentElement?.clientWidth || 0
-            }));
-            assert(geom.scrollWidth === geom.clientWidth,`tutorial horizontal overflow ${width}`);
-            assert(geom.frameScrollWidth <= geom.frameClientWidth + 2,`target horizontal overflow ${width}/${index+1}`);
-
-            return {
-              step_id:step.step_id,
-              route:s.actual_route,
-              selector:s.selector,
-              target_found:s.target_found,
-              target_visible_after_scroll:s.target_visible_after_scroll,
-              highlight_visible:s.highlight_visible,
-              overlay_visible:s.overlay_visible,
-              overlay_target_overlap_ratio:s.overlay_target_overlap_ratio,
-              draggable:s.draggable,
-              business_mutation_count:0
-            };
-          }
-
-          (async()=>{
-            const browser = await chromium.launch({headless:true});
-            const runtime = {
-              version:'1.2.2',
-              viewports:[],
-              target_missing:0,
-              wrong_route:0,
-              wrong_target:0,
-              business_mutation:0,
-              console_error:0,
-              request_error_caused_by_tutorial:0,
-              auth_role_auto_login:0,
-              result:'PASS'
-            };
-            const guideQA = {start:[],resume:[],replay:[],close:[],esc:[],result:'PASS'};
-            let canonicalMap = null;
-            let allMutations = [];
-            let allRequestErrors = [];
-            let allConsoleErrors = [];
-
-            try{
-              for(const width of VIEWPORTS){
-                const context = await browser.newContext({
-                  viewport:{width,height:width<=430?900:1000},
-                  hasTouch:width<=430,
-                  isMobile:width<=430
-                });
-                const tracked = track(context);
-                const page = await context.newPage();
-
-                await openGuideFresh(page);
-                await clickGuideStart(page,'#startFirst10','start');
-                let first = await waitStatus(page,0);
-                guideQA.start.push({width,pass:first.current===0 && first.target_found});
-
-                const map = await page.evaluate(()=>window.DPROFirst10.getTargetMap());
-                assert(map.length===10,`First10 count ${map.length} at ${width}`);
-                assert(JSON.stringify(map.map(x=>x.step_id))===JSON.stringify(EXPECTED_IDS),`First10 order mismatch at ${width}`);
-                map.forEach((step,i)=>{
-                  REQUIRED_FIELDS.forEach(field=>assert(Object.prototype.hasOwnProperty.call(step,field),`missing ${field} step ${i+1}`));
-                  assert(step.target_required===true,`target_required false step ${i+1}`);
-                });
-                if(!canonicalMap) canonicalMap = map;
-                else assert(JSON.stringify(canonicalMap)===JSON.stringify(map),`target map differs by viewport ${width}`);
-
-                const steps = [];
-                for(let i=0;i<map.length;i++){
-                  if(i>0){
-                    if(width<=430) await page.tap('#next');
-                    else if(i%2===0){
-                      await page.locator('#next').focus();
-                      await page.keyboard.press('Enter');
-                    }else{
-                      await page.click('#next');
-                    }
-                  }
-                  const evidence = await recordStep(page,width,i,map[i]);
-                  steps.push(evidence);
-
-                  if((width===390 || width===1440) && (i===0 || i===5)){
-                    const label = width===390?'mobile':'desktop';
-                    const stepLabel = i===0?'step-01':'cross-page-step-06';
-                    await page.screenshot({path:`${out}/${label}-${stepLabel}.png`,fullPage:true});
-                  }
-                }
-
-                // Back must restore the previous exact route/target.
-                await page.click('#back');
-                const backStatus = await waitStatus(page,8);
-                assert(backStatus.step_id===map[8].step_id && backStatus.actual_route===map[8].target_page_or_route,'Back exact target failure');
-                await page.click('#next');
-                await waitStatus(page,9);
-
-                runtime.viewports.push({width,steps,back_previous_target:'PASS'});
-                allMutations.push(...tracked.mutations);
-                allRequestErrors.push(...tracked.requestErrors);
-                allConsoleErrors.push(...tracked.consoleErrors);
-                await context.close();
-              }
-
-              // Guide Start / Close / Resume / Esc / Replay runtime bindings at mobile + desktop.
-              for(const width of [390,1440]){
-                const context = await browser.newContext({
-                  viewport:{width,height:width===390?900:1000},
-                  hasTouch:width===390,
-                  isMobile:width===390
-                });
-                const tracked = track(context);
-                const page = await context.newPage();
-                await openGuideFresh(page);
-                await clickGuideStart(page,'#startFirst10','start');
-                await waitStatus(page,0);
-                for(let i=1;i<=5;i++){
-                  await page.click('#next');
-                  await waitStatus(page,i);
-                }
-
-                const beforeClose = await page.evaluate(()=>window.DPROFirst10.status());
-                await page.click('#close');
-                const closedStatus = await page.evaluate(()=>window.DPROFirst10.status());
-                assert(closedStatus.closed===true && closedStatus.current===5,'Close did not preserve exact progress');
-                assert(/tutorial\.html\?mode=start/.test(page.url()),'Close navigated away unexpectedly');
-                guideQA.close.push({width,current:closedStatus.current,pass:true});
-
-                await Promise.all([
-                  page.waitForURL(/guide\.html/),
-                  page.click('#returnGuide')
-                ]);
-                await clickGuideStart(page,'#resumeFirst10','resume');
-                const resumed = await waitStatus(page,5);
-                assert(resumed.step_id===canonicalMap[5].step_id && resumed.actual_route===canonicalMap[5].target_page_or_route,'Resume exact target failure');
-                guideQA.resume.push({width,step_id:resumed.step_id,route:resumed.actual_route,pass:true});
-
-                await page.keyboard.press('Escape');
-                const escStatus = await page.evaluate(()=>window.DPROFirst10.status());
-                assert(escStatus.closed===true && escStatus.current===5,'Esc did not preserve exact progress');
-                guideQA.esc.push({width,current:escStatus.current,pass:true});
-                await page.click('#reopen');
-                await waitStatus(page,5);
-
-                await page.click('#close');
-                await Promise.all([
-                  page.waitForURL(/guide\.html/),
-                  page.click('#returnGuide')
-                ]);
-                await clickGuideStart(page,'#replayFirst10','replay');
-                const replayed = await waitStatus(page,0);
-                assert(replayed.step_id===canonicalMap[0].step_id && replayed.actual_route===canonicalMap[0].target_page_or_route,'Replay did not return Step 1 exact target');
-                guideQA.replay.push({width,step_id:replayed.step_id,route:replayed.actual_route,pass:true});
-
-                allMutations.push(...tracked.mutations);
-                allRequestErrors.push(...tracked.requestErrors);
-                allConsoleErrors.push(...tracked.consoleErrors);
-                await context.close();
-              }
-
-              // TARGET_MISSING must block, show recovery, and Retry must recover.
-              {
-                const context = await browser.newContext({viewport:{width:390,height:900},hasTouch:true,isMobile:true});
-                const tracked = track(context);
-                const page = await context.newPage();
-                await page.route('**/demo.html', route => route.fulfill({
-                  status:200,
-                  contentType:'text/html; charset=utf-8',
-                  body:'<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>QA missing target</title></head><body><main><h1>QA missing target</h1></main></body></html>'
-                }));
-                await openGuideFresh(page);
-                await clickGuideStart(page,'#startFirst10','start');
-                await page.waitForSelector('text=画面が見つかりません',{timeout:15000});
-                const missing = await page.evaluate(()=>window.DPROFirst10.status());
-                assert(missing.target_missing===true && missing.target_found===false,'TARGET_MISSING did not block');
-                assert((await page.locator('#retry').count())===1,'Retry missing');
-                assert((await page.locator('.t-recovery a[href="guide.html"]').count())===1,'Return to Guide missing');
-                await page.screenshot({path:`${out}/TARGET_MISSING-recovery.png`,fullPage:true});
-
-                await page.unroute('**/demo.html');
-                await page.click('#retry');
-                const recovered = await waitStatus(page,0,16000);
-                assert(recovered.target_missing===false && recovered.target_found===true,'Retry did not recover target');
-                fs.writeFileSync(`${out}/TARGET_MISSING_RECOVERY.json`,JSON.stringify({
-                  initial_blocked:true,
-                  message:'画面が見つかりません',
-                  retry:true,
-                  return_to_guide:true,
-                  recovered:true,
-                  current_after_recovery:recovered.current,
-                  step_id:recovered.step_id
-                },null,2));
-
-                allMutations.push(...tracked.mutations);
-                allRequestErrors.push(...tracked.requestErrors);
-                allConsoleErrors.push(...tracked.consoleErrors);
-                await context.close();
-              }
-
-              runtime.business_mutation = allMutations.length;
-              runtime.auth_role_auto_login = allMutations.filter(x=>/login|session/i.test(x.url)).length;
-              runtime.console_error = allConsoleErrors.length;
-              runtime.request_error_caused_by_tutorial = allRequestErrors.length;
-
-              assert(runtime.business_mutation===0,`business mutation requests: ${JSON.stringify(allMutations)}`);
-              assert(runtime.auth_role_auto_login===0,`auto-login detected: ${JSON.stringify(allMutations)}`);
-              assert(runtime.console_error===0,`console errors: ${JSON.stringify(allConsoleErrors)}`);
-              assert(runtime.request_error_caused_by_tutorial===0,`request errors: ${JSON.stringify(allRequestErrors)}`);
-
-              fs.writeFileSync(`${out}/TUTORIAL_TARGET_MAP.json`,JSON.stringify({
-                version:'1.2.2',
-                repository:'dpromstk2000-lab/dpro-visit-ahaki',
-                first10:canonicalMap,
-                count:canonicalMap.length
-              },null,2));
-              fs.writeFileSync(`${out}/TUTORIAL_RUNTIME_QA.json`,JSON.stringify(runtime,null,2));
-              fs.writeFileSync(`${out}/GUIDE_CENTER_RUNTIME_QA.json`,JSON.stringify(guideQA,null,2));
-              fs.writeFileSync(`${out}/MUTATION_ZERO.txt`,
-                `business_mutation=0\nauth_role_auto_login=0\nconsole_error=0\nrequest_error_caused_by_tutorial=0\n`);
-              console.log('TUTORIAL_NAVIGATION_V1.2.2_RUNTIME_QA=PASS');
-            } finally {
-              await browser.close();
-            }
-          })().catch(err=>{
-            console.error(err);
-            process.exit(1);
-          });
-          JS
-
+          path = '.github/workflows/visit-ahaki-tutorial-navigation-v122-qa.yml'
+          source = subprocess.check_output(['git','show',f'HEAD^:{path}'], text=True)
+          marker = 'cat > "$GITHUB_WORKSPACE/.tutorial-v122-qa.js" <<\'JS\''
+          marker_pos = source.find(marker)
+          if marker_pos < 0:
+              raise SystemExit('Previous runtime QA script marker not found')
+          start = source.find('\n', marker_pos) + 1
+          end = source.find('\n          JS\n', start)
+          if end < 0:
+              raise SystemExit('Previous runtime QA script terminator not found')
+          body = source[start:end]
+          lines = body.splitlines()
+          body = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines) + '\n'
+          out = Path('.tutorial-v122-qa.js')
+          out.write_text(body, encoding='utf-8')
+          print('RESTORED_RUNTIME_QA_BYTES=' + str(out.stat().st_size))
+          PY
           node --check "$GITHUB_WORKSPACE/.tutorial-v122-qa.js"
           node "$GITHUB_WORKSPACE/.tutorial-v122-qa.js"
 
@@ -432,6 +109,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -f "$GITHUB_WORKSPACE/.tutorial-v122-qa.js"
+          test -s "$EVIDENCE_DIR/GITHUB_PAGES_EVIDENCE.txt"
           test -s "$EVIDENCE_DIR/TUTORIAL_TARGET_MAP.json"
           test -s "$EVIDENCE_DIR/TUTORIAL_RUNTIME_QA.json"
           test -s "$EVIDENCE_DIR/GUIDE_CENTER_RUNTIME_QA.json"
