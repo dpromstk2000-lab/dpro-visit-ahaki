@@ -1,4 +1,5 @@
 name: VISIT AHAKI Tutorial Navigation V1.2.2 QA
+# R4: protected target overflow is baseline-aware
 
 on:
   push:
@@ -205,7 +206,30 @@ jobs:
               frameClientWidth:document.querySelector('#targetFrame').contentDocument?.documentElement?.clientWidth || 0
             }));
             assert(geom.scrollWidth === geom.clientWidth,`tutorial horizontal overflow ${width}`);
-            assert(geom.frameScrollWidth <= geom.frameClientWidth + 2,`target horizontal overflow ${width}/${index+1}`);
+
+            // Protected target pages may already have their own baseline overflow.
+            // Tutorial QA fails only if iframe presentation makes that overflow worse.
+            const frameOverflow = Math.max(0, geom.frameScrollWidth - geom.frameClientWidth);
+            let standaloneOverflow = 0;
+            if(frameOverflow > 2){
+              const direct = await page.context().newPage();
+              try{
+                await direct.goto(`${base}/${step.target_page_or_route}?qa=overflow-${width}-${index+1}-${Date.now()}`,{
+                  waitUntil:'networkidle',timeout:90000
+                });
+                const directGeom = await direct.evaluate(() => ({
+                  scrollWidth:document.documentElement.scrollWidth,
+                  clientWidth:document.documentElement.clientWidth
+                }));
+                standaloneOverflow = Math.max(0, directGeom.scrollWidth - directGeom.clientWidth);
+              } finally {
+                await direct.close();
+              }
+              assert(
+                frameOverflow <= standaloneOverflow + 2,
+                `tutorial increased target horizontal overflow ${width}/${index+1}: frame=${frameOverflow}, standalone=${standaloneOverflow}`
+              );
+            }
 
             return {
               step_id:step.step_id,
@@ -217,6 +241,8 @@ jobs:
               overlay_visible:s.overlay_visible,
               overlay_target_overlap_ratio:s.overlay_target_overlap_ratio,
               draggable:s.draggable,
+              target_overflow_px:frameOverflow,
+              standalone_target_overflow_px:standaloneOverflow,
               business_mutation_count:0
             };
           }
