@@ -1,4 +1,5 @@
 name: VISIT AHAKI Support Synchronization V1.2.2
+# R2: persist rendered-PDF QR evidence and fix source-diff syntax
 
 on:
   push:
@@ -298,7 +299,7 @@ jobs:
           : > "$QA_DIR/QR_PDF_DECODED.txt"
           for f in "$QA_DIR"/quick-renders/*.png "$QA_DIR"/detailed-renders/*.png; do
             zbarimg --quiet --raw "$f" 2>/dev/null | while IFS= read -r value; do
-              test -n "$value" && printf '%s\t%s\n' "$f" "$value"
+              test -n "$value" && printf '%s\t%s\n' "$f" "$value" >> "$QA_DIR/QR_PDF_DECODED.txt"
             done || true
           done
           test -s "$QA_DIR/QR_PDF_DECODED.txt"
@@ -362,7 +363,7 @@ jobs:
           Path('presentation-qa/support-sync-v1.2.2/STATIC_SUPPORT_QA.json').write_text(json.dumps({'result':'PASS','checks':checks,'failed':failed},ensure_ascii=False,indent=2))
           PY
 
-          git diff -- "$BASELINE_HEAD" -- guide.html manuals/quick-start-master-v1.1.html manuals/detailed-manual-master-v1.1.html > "$QA_DIR/SUPPORT_SOURCE_DIFF.patch"
+          git diff "$BASELINE_HEAD" -- guide.html manuals/quick-start-master-v1.1.html manuals/detailed-manual-master-v1.1.html > "$QA_DIR/SUPPORT_SOURCE_DIFF.patch"
           git diff --name-only "$BASELINE_HEAD" HEAD > "$QA_DIR/CHANGED_BEFORE_GENERATED.txt"
 
       - name: Final freeze proof before commit
