@@ -182,7 +182,7 @@
           step_id:'visit-ahaki-first10-09-safe-family-contact', order:9, role_or_surface:'guide_safety',
           target_page_or_route:'guide.html', target_selector:'[data-group="owner"] .guide-list li:nth-child(4)', title:'安全な家族連絡を確認',
           body:'Guide Centerの安定した安全説明を使い、健康情報を含めない家族連絡の考え方を確認します。',
-          safe:'First10からLINEやその他の連絡送信を自動実行しません。', placement:'auto', target_required:true
+          safe:'First10からLINEやその他の連絡送信を自動実行しません。', placement:'above', target_required:true
         },
         {
           step_id:'visit-ahaki-first10-10-system-check', order:10, role_or_surface:'system_check',
@@ -382,6 +382,12 @@
 
       function clamp(v,min,max){return Math.min(Math.max(v,min),Math.max(min,max))}
 
+      function scrollBlockForStep(step){
+        if(step?.placement === 'above') return 'end';
+        if(step?.placement === 'below') return 'start';
+        return 'center';
+      }
+
       function placePanel(target){
         if(closed || panel.hidden || manuallyDragged || !target) return;
         const t = parentRectForTarget(target);
@@ -391,14 +397,18 @@
         const minTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--t-header')) + 8;
         const maxTop = window.innerHeight - ph - 8;
         const maxLeft = window.innerWidth - pw - 8;
-        const candidates = [
-          {left:t.right+gap, top:t.top+(t.height-ph)/2},
-          {left:t.left-pw-gap, top:t.top+(t.height-ph)/2},
-          {left:t.left+(t.width-pw)/2, top:t.bottom+gap},
-          {left:t.left+(t.width-pw)/2, top:t.top-ph-gap},
+        const rightCandidate = {left:t.right+gap, top:t.top+(t.height-ph)/2};
+        const leftCandidate = {left:t.left-pw-gap, top:t.top+(t.height-ph)/2};
+        const belowCandidate = {left:t.left+(t.width-pw)/2, top:t.bottom+gap};
+        const aboveCandidate = {left:t.left+(t.width-pw)/2, top:t.top-ph-gap};
+        let rawCandidates = [rightCandidate,leftCandidate,belowCandidate,aboveCandidate];
+        if(activeStep?.placement === 'above') rawCandidates = [aboveCandidate,rightCandidate,leftCandidate,belowCandidate];
+        if(activeStep?.placement === 'below') rawCandidates = [belowCandidate,rightCandidate,leftCandidate,aboveCandidate];
+        rawCandidates.push(
           {left:8, top:window.innerHeight-ph-8},
           {left:window.innerWidth-pw-8, top:minTop}
-        ].map(c => ({
+        );
+        const candidates = rawCandidates.map(c => ({
           left:clamp(c.left,8,maxLeft),
           top:clamp(c.top,minTop,maxTop)
         }));
@@ -508,7 +518,7 @@
 
         try{
           ensureHighlightStyle(frame.contentDocument);
-          target.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+          target.scrollIntoView({block:scrollBlockForStep(step),inline:'nearest',behavior:'auto'});
           await new Promise(r => setTimeout(r,120));
           target.setAttribute(HIGHLIGHT_ATTR,'true');
           activeTarget = target;
@@ -521,7 +531,7 @@
 
         if(!targetVisible(target)){
           try{
-            target.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+            target.scrollIntoView({block:scrollBlockForStep(step),inline:'nearest',behavior:'auto'});
             await new Promise(r => setTimeout(r,100));
           }catch{}
         }
