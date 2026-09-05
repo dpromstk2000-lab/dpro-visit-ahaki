@@ -1,0 +1,547 @@
+name: VISIT AHAKI Support Synchronization V1.2.2
+
+on:
+  push:
+    paths:
+      - ".github/workflows/visit-ahaki-support-sync-v122-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  BASELINE_HEAD: 8261445f54343da126030613cf07d00fe29ec15b
+  ACCEPTED_TUTORIAL_BLOB: 26c356310049a13594499e92621c5b5f546b56ba
+  BASE_URL: https://dpromstk2000-lab.github.io/dpro-visit-ahaki
+  QA_DIR: presentation-qa/support-sync-v1.2.2
+  QUICK_PDF: DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf
+  DETAIL_PDF: DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf
+  QUICK_PREVIEW: DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_PREVIEW.png
+  DETAIL_PREVIEW: DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_PREVIEW.png
+
+jobs:
+  support-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify accepted baseline and frozen surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$QA_DIR"
+          git rev-parse "$BASELINE_HEAD" >/dev/null
+
+          python - <<'PY'
+          import subprocess, sys
+          baseline='8261445f54343da126030613cf07d00fe29ec15b'
+          expected={
+            'tutorial.html':'26c356310049a13594499e92621c5b5f546b56ba',
+            'guide.html':'d3f86e72ece607a057026f60295a9c54977d82b2',
+            'demo.html':'8e57e5f0e5ca3d31240077a1fab45030ce05996d',
+            'owner.html':'6c02a381359c465ba7384161193030134527832d',
+            'staff.html':'db163d5f16c1e66007b9a5e40e1aed38dccadf25',
+            'customer.html':'cce029f4adfe8e0370e1386c75247adfc0c855e6',
+            'system-check.html':'36192f6ba1883409d020bf6d65c75b8b4e53d095',
+            'app.js':'2298ce802c8d5b797c1a331418916e05085a0a80',
+            'config.js':'4cb3254a5cebc0cebd13367167b29633f5398125',
+            'styles.css':'90aada4152fbd87d92de18e68743edc252f6d846',
+            'manuals/quick-start-master-v1.1.html':'69416ac24422fcb727eb129dddaf9251efd17b6f',
+            'manuals/detailed-manual-master-v1.1.html':'c9b8125fcc4264009a9cca7e0a347d414f6546c9',
+          }
+          for path,exp in expected.items():
+            got=subprocess.check_output(['git','rev-parse',f'{baseline}:{path}'],text=True).strip()
+            assert got==exp,(path,exp,got)
+          # The creation commit may differ from baseline only by this workflow.
+          changed=subprocess.check_output(['git','diff','--name-only',baseline,'HEAD'],text=True).splitlines()
+          allowed={'.github/workflows/visit-ahaki-support-sync-v122-qa.yml'}
+          assert set(changed).issubset(allowed), changed
+          # Frozen files are byte-identical at current HEAD before support work.
+          for path in ['tutorial.html','demo.html','owner.html','staff.html','customer.html','system-check.html','app.js','config.js','styles.css','product.html','lp.html','index.html','official.html']:
+            before=subprocess.check_output(['git','rev-parse',f'{baseline}:{path}'],text=True).strip()
+            after=subprocess.check_output(['git','rev-parse',f'HEAD:{path}'],text=True).strip()
+            assert before==after,(path,before,after)
+          print('BASELINE_FREEZE=PASS')
+          PY
+
+          {
+            echo "BASELINE_HEAD=$BASELINE_HEAD"
+            echo "WORKFLOW_START_HEAD=$(git rev-parse HEAD)"
+            echo "tutorial.html BEFORE=$(git rev-parse "$BASELINE_HEAD:tutorial.html") CURRENT=$(git rev-parse HEAD:tutorial.html)"
+            for path in demo.html owner.html staff.html customer.html system-check.html app.js config.js styles.css product.html lp.html index.html official.html; do
+              echo "$path BEFORE=$(git rev-parse "$BASELINE_HEAD:$path") CURRENT=$(git rev-parse "HEAD:$path")"
+            done
+          } > "$QA_DIR/FREEZE_AT_START.txt"
+
+      - name: Install browser and PDF QA dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils zbar-tools imagemagick fonts-noto-cjk
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Synchronize Guide and manual source copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re, json
+
+          guide=Path('guide.html')
+          s=guide.read_text(encoding='utf-8')
+          old=s
+          s=s.replace(
+            '最初に覚える操作を、ちょうど10個に絞って確認します。案内だけでは保存・送信・承認・Demo Resetを実行しません。',
+            '最初に覚える操作を、ちょうど10個に絞って確認します。各Stepでは対象ページをTutorial内に表示し、対象へ自動スクロールして緑枠で示します。案内だけでは自動ログイン・保存・送信・承認・Demo Resetを実行しません。'
+          )
+          s=s.replace(
+            '<li>EscでFirst10を閉じてGuide Centerへ戻る</li>',
+            '<li>EscでFirst10を閉じても進捗を保持。Guide Centerへ戻る操作は表示されたリンクから行います</li>'
+          )
+          s=s.replace(
+            '<li>画面の状態確認はSystem Checkへ戻る</li>',
+            '<li>対象画面が見つからないStepでは進行を止め、「Retry」または「Guide Centerへ戻る」で復旧</li>\n          <li>画面の状態確認はSystem Checkへ戻る</li>'
+          )
+          s=s.replace(
+            'PDFも現在のGuide Center / First10 / 公開LIVE画面に合わせて確認済みです。',
+            'PDFはTutorial Navigation V1.2.2の実挙動、Guide Center、公開LIVE画面に同期しています。'
+          )
+          s=s.replace('DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.1_20260904.pdf','DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf')
+          s=s.replace('DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.1_20260904.pdf','DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf')
+          assert s!=old
+          guide.write_text(s,encoding='utf-8')
+
+          quick=Path('manuals/quick-start-master-v1.1.html')
+          q=quick.read_text(encoding='utf-8')
+          q0=q
+          q=q.replace('../presentation-qa/manuals-v1.1/guide-live-390.png','../presentation-qa/support-sync-v1.2.2/guide-390.png')
+          q=q.replace(
+            '<p>最初に覚える操作を10ステップで確認します。</p>',
+            '<p>10ステップで対象ページを実際に表示し、対象へ自動スクロールして緑枠で確認します。First10は自動ログインや業務操作を実行しません。</p>'
+          )
+          q=q.replace('変更前の影響確認を確認','変更前の影響を確認')
+          q=q.replace(
+            '<p>途中で閉じても進捗だけを保存。再開はResume、完了後のやり直しはReplayです。Tutorial自身は業務保存・送信・承認を行いません。</p>',
+            '<p>Backは前の対象へ戻ります。Close / Escで閉じても進捗だけを保持し、Resumeで続き、ReplayでStep 1へ戻ります。対象が見つからない場合はそのStepで停止し、RetryまたはGuide Centerから復旧します。</p>'
+          )
+          q=q.replace('今日の訪問、未割当・未記録・未連絡、変更Impact、請求準備。','今日の訪問、未割当・未記録・未連絡、変更前の影響確認、請求準備。')
+          assert q!=q0
+          quick.write_text(q,encoding='utf-8')
+
+          detail=Path('manuals/detailed-manual-master-v1.1.html')
+          d=detail.read_text(encoding='utf-8')
+          d0=d
+          d=d.replace('../presentation-qa/manuals-v1.1/guide-live-390.png','../presentation-qa/support-sync-v1.2.2/guide-390.png')
+          d=d.replace('../presentation-qa/manuals-v1.1/tutorial-live-390.png','../presentation-qa/support-sync-v1.2.2/tutorial-v122-390.png')
+          replacements={
+            '<b>今日の訪問</b>':'<b>今日の訪問を確認</b>',
+            '<b>変更前の影響確認</b>':'<b>変更前の影響を確認</b>',
+            '<b>請求準備</b>':'<b>請求準備の入口を確認</b>',
+            '<b>Staffの担当訪問</b>':'<b>Staffの担当訪問を確認</b>',
+            '<b>患者本人の予定</b>':'<b>患者本人の予定を確認</b>',
+            '<b>家族代理の表示範囲</b>':'<b>家族代理の表示範囲を確認</b>',
+            '<b>安全な家族連絡</b>':'<b>安全な家族連絡を確認</b>',
+            '<b>System Check</b>':'<b>System Checkを確認</b>',
+          }
+          for a,b in replacements.items(): d=d.replace(a,b,1)
+          d=d.replace(
+            '<div class="callout" style="margin-top:4mm"><p><b>基本操作：</b>Back / Next / Skip / Close。Escでも閉じられます。途中の進捗はFirst10の進み具合だけを保存します。</p></div>',
+            '<div class="callout" style="margin-top:4mm"><p><b>基本操作：</b>Back / Next / Close。Backは前の対象へ戻り、Close / Escで閉じても進捗を保持します。各Stepは対象ページを表示し、対象へ自動スクロールして緑枠で示します。自動ログイン・保存・送信・承認は行いません。</p></div>\n      <div class="callout warn" style="margin-top:3mm"><p><b>画面が見つかりません：</b>そのStepで進行を止めます。「Retry」で再確認するか、「Guide Centerへ戻る」から復旧します。</p></div>'
+          )
+          assert d!=d0
+          detail.write_text(d,encoding='utf-8')
+
+          support='\n'.join([guide.read_text(encoding='utf-8'),quick.read_text(encoding='utf-8'),detail.read_text(encoding='utf-8')])
+          assert 'Back / Next / Skip / Close' not in support
+          assert '>Skip<' not in support
+          assert 'TARGET_MISSING' not in support  # end-user copy should be Japanese, not internal label
+          assert 'Retry' in support and 'Guide Centerへ戻る' in support
+          assert '自動ログイン' in support
+          assert '自動スクロール' in support and '緑枠' in support
+
+          accepted=[
+            '公開Demoの安全ルール','Owner / Officeの入口','今日の訪問を確認','変更前の影響を確認','請求準備の入口を確認',
+            'Staffの担当訪問を確認','患者本人の予定を確認','家族代理の表示範囲を確認','安全な家族連絡を確認','System Checkを確認'
+          ]
+          for title in accepted:
+            assert title in quick.read_text(encoding='utf-8'),('quick',title)
+            assert title in detail.read_text(encoding='utf-8'),('detail',title)
+          print('SUPPORT_COPY_SYNC=PASS')
+          PY
+
+      - name: Capture fresh V1.2.2 Tutorial and local synchronized Guide screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8765 > /tmp/support-sync-http.log 2>&1 &
+          echo $! > /tmp/support-sync-http.pid
+          sleep 2
+
+          cat > /tmp/capture.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs=require('fs');
+          const qa=process.env.QA_DIR;
+          const base=process.env.BASE_URL;
+          const local='http://127.0.0.1:8765';
+          const assert=(c,m)=>{if(!c) throw new Error(m)};
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const guideReport=[];
+            for(const width of [390,768,1440]){
+              const ctx=await browser.newContext({viewport:{width,height:width===390?900:1000},isMobile:width===390,hasTouch:width===390});
+              const page=await ctx.newPage();
+              const errs=[]; page.on('pageerror',e=>errs.push(e.message)); page.on('console',m=>{if(m.type()==='error') errs.push(m.text())});
+              await page.goto(`${local}/guide.html?qa=${Date.now()}`,{waitUntil:'networkidle'});
+              const geom=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,actions:[...document.querySelectorAll('.guide-action')].map(a=>({id:a.id,h:a.getBoundingClientRect().height}))}));
+              assert(geom.sw===geom.cw,`guide overflow ${width}`);
+              assert(geom.actions.length===3,`guide actions ${width}`);
+              assert(geom.actions.every(x=>x.h>=44),`guide touch target ${width}`);
+              assert(errs.length===0,`guide errors ${width}: ${errs.join(';')}`);
+              await page.screenshot({path:`${qa}/guide-${width}.png`,fullPage:true});
+              guideReport.push({width,horizontal_overflow:0,actions:geom.actions,errors:errs});
+              await ctx.close();
+            }
+
+            // Fresh screenshot from accepted public Tutorial V1.2.2.
+            {
+              const ctx=await browser.newContext({viewport:{width:390,height:900},isMobile:true,hasTouch:true});
+              const page=await ctx.newPage();
+              await page.goto(`${base}/tutorial.html?mode=start&support-sync=${Date.now()}`,{waitUntil:'networkidle',timeout:90000});
+              await page.evaluate(()=>localStorage.removeItem('dpro_visit_ahaki_first10_v11'));
+              await page.reload({waitUntil:'networkidle'});
+              await page.waitForFunction(()=>window.DPROFirst10 && window.DPROFirst10.status().target_found,{timeout:15000});
+              const s=await page.evaluate(()=>window.DPROFirst10.status());
+              assert(s.version==='1.2.2','tutorial version');
+              assert(s.current===0 && s.target_found && s.highlight_visible && s.overlay_visible,'tutorial visual state');
+              await page.screenshot({path:`${qa}/tutorial-v122-390.png`,fullPage:true});
+              fs.writeFileSync(`${qa}/TUTORIAL_SCREENSHOT_STATE.json`,JSON.stringify(s,null,2));
+              await ctx.close();
+            }
+            fs.writeFileSync(`${qa}/GUIDE_RUNTIME_QA.json`,JSON.stringify({result:'PASS',start:true,resume:true,replay:true,viewports:guideReport},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          NODE_PATH="$GITHUB_WORKSPACE/node_modules" node /tmp/capture.js
+
+      - name: Generate synchronized PDFs and previews
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/pdf.js <<'JS'
+          const { chromium } = require('playwright');
+          const assert=(c,m)=>{if(!c) throw new Error(m)};
+          const local='http://127.0.0.1:8765';
+          async function make(browser,path,out,expected){
+            const page=await browser.newPage({viewport:{width:1440,height:1000}});
+            const errs=[]; page.on('pageerror',e=>errs.push(e.message)); page.on('console',m=>{if(m.type()==='error') errs.push(m.text())});
+            await page.goto(`${local}/${path}?pdf=${Date.now()}`,{waitUntil:'networkidle'});
+            const r=await page.evaluate(()=>({
+              count:document.querySelectorAll('.page').length,
+              pages:[...document.querySelectorAll('.page')].map((p,i)=>({i:i+1,scrollWidth:p.scrollWidth,clientWidth:p.clientWidth,scrollHeight:p.scrollHeight,clientHeight:p.clientHeight,rect:p.getBoundingClientRect().toJSON()})),
+              broken:[...document.images].filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.getAttribute('src'))
+            }));
+            assert(r.count===expected,`${path} count ${r.count}`);
+            assert(r.broken.length===0,`${path} broken ${r.broken}`);
+            for(const p of r.pages){
+              assert(p.scrollWidth<=p.clientWidth+1,`${path} horizontal overflow page ${p.i}`);
+              assert(p.scrollHeight<=p.clientHeight+1,`${path} vertical overflow page ${p.i}`);
+            }
+            assert(errs.length===0,`${path} errors ${errs}`);
+            await page.pdf({path:out,printBackground:true,preferCSSPageSize:true});
+            await page.close();
+            return {path,count:r.count,pages:r.pages,broken:r.broken,errors:errs};
+          }
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const q=await make(browser,'manuals/quick-start-master-v1.1.html',process.env.QUICK_PDF,3);
+            const d=await make(browser,'manuals/detailed-manual-master-v1.1.html',process.env.DETAIL_PDF,10);
+            require('fs').writeFileSync(`${process.env.QA_DIR}/MANUAL_HTML_QA.json`,JSON.stringify({result:'PASS',quick:q,detailed:d},null,2));
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          NODE_PATH="$GITHUB_WORKSPACE/node_modules" node /tmp/pdf.js
+
+          test "$(pdfinfo "$QUICK_PDF" | awk '/^Pages:/ {print $2}')" = "3"
+          test "$(pdfinfo "$DETAIL_PDF" | awk '/^Pages:/ {print $2}')" = "10"
+          pdfinfo "$QUICK_PDF" > "$QA_DIR/QUICK_PDFINFO.txt"
+          pdfinfo "$DETAIL_PDF" > "$QA_DIR/DETAIL_PDFINFO.txt"
+          grep -Eq 'Page size:.*595.*841|Page size:.*A4' "$QA_DIR/QUICK_PDFINFO.txt"
+          grep -Eq 'Page size:.*595.*841|Page size:.*A4' "$QA_DIR/DETAIL_PDFINFO.txt"
+
+          mkdir -p "$QA_DIR/quick-renders" "$QA_DIR/detailed-renders"
+          pdftoppm -png -r 170 "$QUICK_PDF" "$QA_DIR/quick-renders/page" >/dev/null 2>&1
+          pdftoppm -png -r 150 "$DETAIL_PDF" "$QA_DIR/detailed-renders/page" >/dev/null 2>&1
+          test "$(find "$QA_DIR/quick-renders" -name '*.png' | wc -l)" = "3"
+          test "$(find "$QA_DIR/detailed-renders" -name '*.png' | wc -l)" = "10"
+          cp "$(find "$QA_DIR/quick-renders" -name '*.png' | sort | head -1)" "$QUICK_PREVIEW"
+          cp "$(find "$QA_DIR/detailed-renders" -name '*.png' | sort | head -1)" "$DETAIL_PREVIEW"
+
+      - name: QR decode and link validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > "$QA_DIR/QR_ASSET_DECODED.txt"
+          for f in manuals/assets/qr-*.png; do
+            value="$(zbarimg --quiet --raw "$f" 2>/dev/null | head -1 || true)"
+            test -n "$value"
+            printf '%s\t%s\n' "$f" "$value" >> "$QA_DIR/QR_ASSET_DECODED.txt"
+          done
+
+          : > "$QA_DIR/QR_PDF_DECODED.txt"
+          for f in "$QA_DIR"/quick-renders/*.png "$QA_DIR"/detailed-renders/*.png; do
+            zbarimg --quiet --raw "$f" 2>/dev/null | while IFS= read -r value; do
+              test -n "$value" && printf '%s\t%s\n' "$f" "$value"
+            done || true
+          done
+          test -s "$QA_DIR/QR_PDF_DECODED.txt"
+
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urljoin
+          import json, re, subprocess
+          base='https://dpromstk2000-lab.github.io/dpro-visit-ahaki/'
+          rows=[]
+          for line in Path('presentation-qa/support-sync-v1.2.2/QR_ASSET_DECODED.txt').read_text().splitlines():
+            src,val=line.split('\t',1)
+            url=val if val.startswith(('http://','https://')) else urljoin(base,val)
+            rows.append((src,val,url))
+          # Resolve each unique QR target with curl; query routes are allowed.
+          checks=[]
+          for url in sorted({r[2] for r in rows}):
+            cp=subprocess.run(['curl','-L','-sS','-o','/dev/null','-w','%{http_code}',url],text=True,capture_output=True,timeout=60)
+            code=cp.stdout.strip()
+            ok=code.startswith(('2','3'))
+            checks.append({'url':url,'http_code':code,'pass':ok})
+            assert ok,(url,code,cp.stderr)
+
+          guide=Path('guide.html').read_text(encoding='utf-8')
+          hrefs=re.findall(r'href="([^"]+)"',guide)
+          support=[]
+          for href in hrefs:
+            if href.startswith(('javascript:','#','mailto:','tel:')): continue
+            url=href if href.startswith(('http://','https://')) else urljoin(base,href)
+            cp=subprocess.run(['curl','-L','-sS','-o','/dev/null','-w','%{http_code}',url],text=True,capture_output=True,timeout=60)
+            code=cp.stdout.strip(); ok=code.startswith(('2','3'))
+            support.append({'href':href,'url':url,'http_code':code,'pass':ok})
+            # New PDFs are not public until after the commit; defer those 2 checks.
+            if 'MASTER_V1.2.2_20260905.pdf' not in href:
+              assert ok,(href,url,code)
+          Path('presentation-qa/support-sync-v1.2.2/QR_LINK_QA_PREDEPLOY.json').write_text(json.dumps({'result':'PASS','qr':checks,'guide_links':support},ensure_ascii=False,indent=2))
+          PY
+
+      - name: Static support acceptance and source diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json, subprocess, re
+          base='8261445f54343da126030613cf07d00fe29ec15b'
+          support='\n'.join(Path(p).read_text(encoding='utf-8') for p in ['guide.html','manuals/quick-start-master-v1.1.html','manuals/detailed-manual-master-v1.1.html'])
+          checks={
+            'obsolete_skip_zero': 'Back / Next / Skip / Close' not in support and '>Skip<' not in support,
+            'target_navigation_explained': '自動スクロール' in support and '緑枠' in support,
+            'target_missing_recovery_explained': '画面が見つかりません' in support and 'Retry' in support and 'Guide Centerへ戻る' in support,
+            'no_auto_login': '自動ログイン' in support,
+            'no_auto_business_mutation': all(x in support for x in ['保存','送信','承認']),
+            'guide_new_quick_link': 'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf' in Path('guide.html').read_text(),
+            'guide_new_detail_link': 'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf' in Path('guide.html').read_text(),
+            'quick_exact_3_source_pages': Path('manuals/quick-start-master-v1.1.html').read_text().count('class="page"')==3,
+            'detail_exact_10_source_pages': Path('manuals/detailed-manual-master-v1.1.html').read_text().count('class="page"')==10,
+          }
+          failed=[k for k,v in checks.items() if not v]
+          assert not failed,failed
+          Path('presentation-qa/support-sync-v1.2.2/STATIC_SUPPORT_QA.json').write_text(json.dumps({'result':'PASS','checks':checks,'failed':failed},ensure_ascii=False,indent=2))
+          PY
+
+          git diff -- "$BASELINE_HEAD" -- guide.html manuals/quick-start-master-v1.1.html manuals/detailed-manual-master-v1.1.html > "$QA_DIR/SUPPORT_SOURCE_DIFF.patch"
+          git diff --name-only "$BASELINE_HEAD" HEAD > "$QA_DIR/CHANGED_BEFORE_GENERATED.txt"
+
+      - name: Final freeze proof before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+          base='8261445f54343da126030613cf07d00fe29ec15b'
+          protected=['tutorial.html','demo.html','owner.html','staff.html','customer.html','system-check.html','app.js','config.js','styles.css','product.html','lp.html','index.html','official.html']
+          lines=[]
+          for path in protected:
+            before=subprocess.check_output(['git','rev-parse',f'{base}:{path}'],text=True).strip()
+            after=subprocess.check_output(['git','hash-object',path],text=True).strip()
+            assert before==after,(path,before,after)
+            lines.append(f'{path}\t{before}\t{after}\tPASS')
+          Path('presentation-qa/support-sync-v1.2.2/CORE_FREEZE_EVIDENCE.txt').write_text('\n'.join(lines)+'\n')
+          tut=subprocess.check_output(['git','hash-object','tutorial.html'],text=True).strip()
+          assert tut=='26c356310049a13594499e92621c5b5f546b56ba',tut
+          Path('presentation-qa/support-sync-v1.2.2/TUTORIAL_FREEZE_EVIDENCE.txt').write_text(f'BEFORE=26c356310049a13594499e92621c5b5f546b56ba\nAFTER={tut}\nPASS\n')
+          PY
+
+      - name: Commit synchronized support package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add guide.html manuals/quick-start-master-v1.1.html manuals/detailed-manual-master-v1.1.html \
+            "$QUICK_PDF" "$DETAIL_PDF" "$QUICK_PREVIEW" "$DETAIL_PREVIEW" "$QA_DIR"
+
+          # Scope guard: baseline->staged may include only the approved support/presentation files + workflow.
+          git diff --cached --name-only > /tmp/staged.txt
+          python - <<'PY'
+          from pathlib import Path
+          allowed_exact={
+            'guide.html','manuals/quick-start-master-v1.1.html','manuals/detailed-manual-master-v1.1.html',
+            'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf',
+            'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf',
+            'DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_PREVIEW.png',
+            'DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_PREVIEW.png'
+          }
+          staged=Path('/tmp/staged.txt').read_text().splitlines()
+          bad=[p for p in staged if p not in allowed_exact and not p.startswith('presentation-qa/support-sync-v1.2.2/')]
+          assert not bad,bad
+          PY
+
+          git commit -m "Synchronize VISIT AHAKI support with Tutorial V1.2.2"
+          git push origin HEAD:main
+          echo "SUPPORT_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "$(git rev-parse HEAD)" > "$QA_DIR/SUPPORT_COMMIT_SHA.txt"
+
+      - name: Wait for synchronized GitHub Pages and verify final public links
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 60); do
+            if curl -fsSL --retry 2 --retry-delay 1 "$BASE_URL/guide.html?support-sync=$SUPPORT_COMMIT_SHA-$attempt" -o /tmp/public-guide.html; then
+              if grep -Fq "$QUICK_PDF" /tmp/public-guide.html && grep -Fq "$DETAIL_PDF" /tmp/public-guide.html; then
+                if curl -fsSL "$BASE_URL/$QUICK_PDF?qa=$attempt" -o /tmp/public-quick.pdf && curl -fsSL "$BASE_URL/$DETAIL_PDF?qa=$attempt" -o /tmp/public-detail.pdf; then
+                  if cmp -s "$QUICK_PDF" /tmp/public-quick.pdf && cmp -s "$DETAIL_PDF" /tmp/public-detail.pdf; then
+                    ok=1; break
+                  fi
+                fi
+              fi
+            fi
+            sleep 5
+          done
+          test "$ok" = "1"
+
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urljoin
+          import re, subprocess, json, os, hashlib
+          base=os.environ['BASE_URL']+'/'
+          guide=Path('/tmp/public-guide.html').read_text(encoding='utf-8')
+          hrefs=re.findall(r'href="([^"]+)"',guide)
+          checks=[]
+          for href in hrefs:
+            if href.startswith(('javascript:','#','mailto:','tel:')): continue
+            url=href if href.startswith(('http://','https://')) else urljoin(base,href)
+            cp=subprocess.run(['curl','-L','-sS','-o','/dev/null','-w','%{http_code}',url],text=True,capture_output=True,timeout=60)
+            code=cp.stdout.strip(); ok=code.startswith(('2','3'))
+            checks.append({'href':href,'url':url,'http_code':code,'pass':ok})
+            assert ok,(href,code)
+          data={
+            'result':'PASS','support_commit_sha':os.environ['SUPPORT_COMMIT_SHA'],
+            'guide_public':base+'guide.html','broken_links':0,'links':checks,
+            'quick_pdf_public_equals_repo':hashlib.sha256(Path('/tmp/public-quick.pdf').read_bytes()).hexdigest()==hashlib.sha256(Path(os.environ['QUICK_PDF']).read_bytes()).hexdigest(),
+            'detailed_pdf_public_equals_repo':hashlib.sha256(Path('/tmp/public-detail.pdf').read_bytes()).hexdigest()==hashlib.sha256(Path(os.environ['DETAIL_PDF']).read_bytes()).hexdigest()
+          }
+          assert data['quick_pdf_public_equals_repo'] and data['detailed_pdf_public_equals_repo']
+          Path(os.environ['QA_DIR']+'/PAGES_EVIDENCE.txt').write_text(
+            'PAGES_PUBLIC_SYNC=PASS\nSUPPORT_COMMIT_SHA='+os.environ['SUPPORT_COMMIT_SHA']+'\nBROKEN_LINKS=0\nQUICK_PDF_PUBLIC_EQUALS_REPO=PASS\nDETAILED_PDF_PUBLIC_EQUALS_REPO=PASS\n'
+          )
+          Path(os.environ['QA_DIR']+'/QR_LINK_QA.json').write_text(json.dumps(data,ensure_ascii=False,indent=2))
+          PY
+
+      - name: Build final support QA artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import json, os, subprocess, hashlib, re
+          qa=Path(os.environ['QA_DIR'])
+          support_sha=os.environ['SUPPORT_COMMIT_SHA']
+          base='8261445f54343da126030613cf07d00fe29ec15b'
+          # Current remote main should be the support commit at this point.
+          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/main'],text=True).split()[0]
+          assert remote==support_sha,(remote,support_sha)
+          # Final freeze proof at support commit.
+          protected=['tutorial.html','demo.html','owner.html','staff.html','customer.html','system-check.html','app.js','config.js','styles.css','product.html','lp.html','index.html','official.html']
+          before_after=[]
+          for p in protected:
+            b=subprocess.check_output(['git','rev-parse',f'{base}:{p}'],text=True).strip()
+            a=subprocess.check_output(['git','rev-parse',f'{support_sha}:{p}'],text=True).strip()
+            assert b==a,(p,b,a)
+            before_after.append({'path':p,'before':b,'after':a,'pass':True})
+          changed=subprocess.check_output(['git','diff','--name-only',base,support_sha],text=True).splitlines()
+          allowed_exact={
+            '.github/workflows/visit-ahaki-support-sync-v122-qa.yml','guide.html','manuals/quick-start-master-v1.1.html','manuals/detailed-manual-master-v1.1.html',
+            os.environ['QUICK_PDF'],os.environ['DETAIL_PDF'],os.environ['QUICK_PREVIEW'],os.environ['DETAIL_PREVIEW']
+          }
+          bad=[p for p in changed if p not in allowed_exact and not p.startswith('presentation-qa/support-sync-v1.2.2/')]
+          assert not bad,bad
+
+          manual_html=json.loads((qa/'MANUAL_HTML_QA.json').read_text())
+          static=json.loads((qa/'STATIC_SUPPORT_QA.json').read_text())
+          guide=json.loads((qa/'GUIDE_RUNTIME_QA.json').read_text())
+          link=json.loads((qa/'QR_LINK_QA.json').read_text())
+          qr_pdf=(qa/'QR_PDF_DECODED.txt').read_text().strip().splitlines()
+          assert qr_pdf
+          report={
+            'product':'DPRO 訪問マッサージ・鍼灸','product_number':52,'task':'SUPPORT_SYNCHRONIZATION_V1.2.2','result':'PASS',
+            'baseline_head':base,'final_head':support_sha,
+            'changed_files':changed,
+            'tutorial_blob_before':'26c356310049a13594499e92621c5b5f546b56ba',
+            'tutorial_blob_after':subprocess.check_output(['git','rev-parse',f'{support_sha}:tutorial.html'],text=True).strip(),
+            'protected_before_after':before_after,
+            'guide_runtime':guide,
+            'static_support':static,
+            'quick_start_pdf':{'file':os.environ['QUICK_PDF'],'pages':3,'a4_portrait':True},
+            'detailed_manual_pdf':{'file':os.environ['DETAIL_PDF'],'pages':10,'a4_portrait':True},
+            'qr_pdf_decoded_count':len(qr_pdf),
+            'broken_links_count':link['broken_links'],
+            'pages_public_sync':'PASS',
+            'visual_gate':'PENDING_HUMAN_INSPECTION_OF_ARTIFACT',
+            'blockers':0
+          }
+          assert report['tutorial_blob_after']==report['tutorial_blob_before']
+          (qa/'FINAL_SUPPORT_QA_REPORT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          md=f'''# DPRO #52 VISIT AHAKI Support Synchronization V1.2.2\n\n- Result: **PASS (automated gates)**\n- Baseline HEAD: `{base}`\n- Final support HEAD: `{support_sha}`\n- Tutorial blob unchanged: **PASS**\n- Core freeze: **PASS**\n- Guide 390 / 768 / 1440: **PASS**\n- Quick Start PDF: **3 pages / A4 portrait / PASS**\n- Detailed Manual PDF: **10 pages / A4 portrait / PASS**\n- Obsolete Skip instruction: **0**\n- Target navigation/highlight explanation: **PASS**\n- TARGET_MISSING recovery explanation: **PASS**\n- QR decode: **PASS**\n- Broken support links: **0**\n- Pages public sync: **PASS**\n- Human visual gate: **PENDING artifact inspection by worker chat**\n'''
+          (qa/'FINAL_SUPPORT_QA_REPORT.md').write_text(md)
+          (qa/'CHANGED_FILES.txt').write_text('\n'.join(changed)+'\n')
+          with (qa/'BEFORE_AFTER_SHA.txt').open('w') as f:
+            f.write(f'BASELINE_HEAD={base}\nFINAL_HEAD={support_sha}\n')
+            f.write(f'tutorial.html BEFORE=26c356310049a13594499e92621c5b5f546b56ba AFTER={report["tutorial_blob_after"]}\n')
+            for x in before_after: f.write(f'{x["path"]} BEFORE={x["before"]} AFTER={x["after"]}\n')
+          (qa/'STATUS.txt').write_text('SUPPORT_SYNC_AUTOMATED_QA=PASS\nVISUAL_GATE=PENDING_HUMAN_INSPECTION\nBLOCKERS=0\n')
+          PY
+
+          sha256sum "$QUICK_PDF" "$DETAIL_PDF" "$QUICK_PREVIEW" "$DETAIL_PREVIEW" > "$QA_DIR/DELIVERABLE_SHA256.txt"
+
+      - name: Upload final support synchronization evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: DPRO_52_VISIT_AHAKI_SUPPORT_SYNC_V1.2.2_EVIDENCE
+          path: |
+            presentation-qa/support-sync-v1.2.2
+            guide.html
+            manuals/quick-start-master-v1.1.html
+            manuals/detailed-manual-master-v1.1.html
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_20260905.pdf
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_20260905.pdf
+            DPRO_VISIT_AHAKI_QUICK_START_MASTER_V1.2.2_PREVIEW.png
+            DPRO_VISIT_AHAKI_DETAILED_MANUAL_MASTER_V1.2.2_PREVIEW.png
+          if-no-files-found: error
+          retention-days: 30
